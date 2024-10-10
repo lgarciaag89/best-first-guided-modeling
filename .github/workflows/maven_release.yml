@@ -47,7 +47,6 @@ jobs:
               NEW_MAJOR=$((MAJOR + 1))
               NEW_MINOR=0
               NEW_PATCH=0
-              break
             elif [[ $LATEST_COMMIT == feat:* ]]; then
               NEW_MINOR=$((MINOR + 1))
               NEW_PATCH=0
@@ -61,6 +60,7 @@ jobs:
 
           # set new version in pom
           mvn versions:set -DnewVersion=$NEW_VERSION
+          mvn versions:commit 
           echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Show Pom.xml

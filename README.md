@@ -5,8 +5,8 @@ Using a best-first search algorithm to guide the modeling process.
 ![Java 8](https://img.shields.io/badge/Java-8-blue.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.8.8-blue.svg)
 [![Build And Release](https://github.com/cicese-biocom/best-first-guided-modeling/actions/workflows/maven_release.yml/badge.svg)](https://github.com/cicese-biocom/best-first-guided-modeling/actions/workflows/maven_release.yml)
-Meantime the repo is private we will get this message:
 
+Meantime the repo is private we will get this message:
 ![Latest Release](https://img.shields.io/github/v/release/cicese-biocom/best-first-guided-modeling?label=latest&style=flat-square)
 
 
