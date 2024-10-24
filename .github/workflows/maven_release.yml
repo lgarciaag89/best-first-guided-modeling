@@ -22,9 +22,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn clean install
-
       - name: Bump version
         id: bump_version
         run: |
@@ -63,6 +60,9 @@ jobs:
           mvn versions:commit 
           echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
 
+      - name: Build with Maven
+        run: mvn clean install
+
       - name: Show Pom.xml
         run: cat pom.xml
 
@@ -77,9 +77,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Rename JAR file with version
-        run: |
-          mv target/best-first-guided-modeling.jar target/best-first-guided-modeling-${{ env.new_version }}.jar
+#      - name: Rename JAR file with version
+#        run: |
+#          mv target/best-first-guided-modeling.jar target/best-first-guided-modeling-${{ env.new_version }}.jar
 
       - name: Create GitHub Release
         id: create_release
