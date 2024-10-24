@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tomocomd.searchmodels;
+package tomocomd.searchmodels.v1;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,19 +13,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import tomocomd.ModelingException;
+import tomocomd.searchmodels.ClassificationModelInfo;
+import tomocomd.searchmodels.ClassificationOptimizationParam;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
 /** @author potter */
-public class SearchClassificationModel extends ASearchModel {
+public class SearchClassificationModelByOneClasifier extends ASearchModelByOneClasifier {
 
   private static final String FORMAT_HEAD = "%s,%s";
   private final ClassificationOptimizationParam opt;
   private List<ClassificationModelInfo> listMInfo;
 
-  public SearchClassificationModel(
+  public SearchClassificationModelByOneClasifier(
       long mId,
       String trainPath,
       String testPath,
@@ -42,7 +44,7 @@ public class SearchClassificationModel extends ASearchModel {
     opt = oP;
   }
 
-  public SearchClassificationModel(
+  public SearchClassificationModelByOneClasifier(
       long mId,
       Instances data,
       String trainPath,
@@ -61,7 +63,7 @@ public class SearchClassificationModel extends ASearchModel {
     opt = oP;
   }
 
-  public SearchClassificationModel(
+  public SearchClassificationModelByOneClasifier(
       long mId,
       Instances data,
       String trainPath,

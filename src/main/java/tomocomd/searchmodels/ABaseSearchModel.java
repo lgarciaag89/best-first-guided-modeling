@@ -11,9 +11,9 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
-public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluator {
+public abstract class ABaseSearchModel extends ASEvaluation implements SubsetEvaluator {
 
-  private static final String ERROR_MSG = "Error coping the classifier";
+  protected static final String ERROR_MSG = "Error coping the classifier";
 
   protected String trainPath;
 
@@ -24,16 +24,14 @@ public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluat
   protected final int classAct;
   protected long modelId;
   protected final List<String> externalTestPath;
-  protected final AbstractClassifier classifier;
 
-  protected ASearchModel(
+  protected ABaseSearchModel(
       String trainPath,
       String testPath,
       String pathToSave,
       int classAct,
       long modelId,
-      List<String> externalTestPath,
-      AbstractClassifier classifier)
+      List<String> externalTestPath)
       throws ModelingException {
     this.trainPath = trainPath;
     this.testPath = testPath;
@@ -42,22 +40,16 @@ public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluat
     this.modelId = modelId;
 
     this.externalTestPath = new LinkedList<>(externalTestPath);
-    try {
-      this.classifier = (AbstractClassifier) AbstractClassifier.makeCopy(classifier);
-    } catch (Exception e) {
-      throw ModelingException.ExceptionType.CLASSIFIER_LOAD_EXCEPTION.get(ERROR_MSG, e);
-    }
   }
 
-  protected ASearchModel(
+  protected ABaseSearchModel(
       Instances trainTotal,
       String trainPath,
       String testPath,
       String pathToSave,
       int classAct,
       long modelId,
-      List<String> externalTestPath,
-      AbstractClassifier classifier)
+      List<String> externalTestPath)
       throws ModelingException {
     this.trainPath = trainPath;
     this.trainTotal = new Instances(trainTotal);
@@ -67,14 +59,9 @@ public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluat
     this.modelId = modelId;
 
     this.externalTestPath = new LinkedList<>(externalTestPath);
-    try {
-      this.classifier = (AbstractClassifier) AbstractClassifier.makeCopy(classifier);
-    } catch (Exception e) {
-      throw ModelingException.ExceptionType.CLASSIFIER_LOAD_EXCEPTION.get(ERROR_MSG, e);
-    }
   }
 
-  protected ASearchModel(
+  protected ABaseSearchModel(
       Instances trainTotal,
       String trainPath,
       Instances testTotal,
@@ -82,8 +69,7 @@ public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluat
       String pathToSave,
       int classAct,
       long modelId,
-      List<String> externalTestPath,
-      AbstractClassifier classifier)
+      List<String> externalTestPath)
       throws ModelingException {
     this.trainPath = trainPath;
     this.trainTotal = new Instances(trainTotal);
@@ -94,11 +80,6 @@ public abstract class ASearchModel extends ASEvaluation implements SubsetEvaluat
     this.modelId = modelId;
 
     this.externalTestPath = new LinkedList<>(externalTestPath);
-    try {
-      this.classifier = (AbstractClassifier) AbstractClassifier.makeCopy(classifier);
-    } catch (Exception e) {
-      throw ModelingException.ExceptionType.CLASSIFIER_LOAD_EXCEPTION.get(ERROR_MSG, e);
-    }
   }
 
   @Override

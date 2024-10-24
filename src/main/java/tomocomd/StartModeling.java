@@ -4,6 +4,10 @@ import java.io.File;
 import java.util.*;
 import org.apache.commons.cli.*;
 import tomocomd.searchmodels.*;
+import tomocomd.searchmodels.v1.InitSearchClassificationModel;
+import tomocomd.searchmodels.v1.InitSearchRegressionModel;
+import tomocomd.searchmodels.v2.InitSearchClassificationModelBySeveralModels;
+import tomocomd.searchmodels.v2.InitSearchRegressionModelBySeveralModels;
 import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.BestFirst;
 import weka.classifiers.AbstractClassifier;
@@ -32,6 +36,7 @@ public class StartModeling {
         "classification",
         false,
         "it is a classification problem, if it is a regression problem not set this option");
+
     Option opt =
         new Option(
             "m",
@@ -45,6 +50,11 @@ public class StartModeling {
     opt.setArgs(Option.UNLIMITED_VALUES);
     options.addOption(opt);
 
+    options.addOption(
+        "b",
+        "build",
+        false,
+        "How to build the models and its evaluation, given a subset all the selected build strategy will run, if not,will run each search for each selected strategy. ");
     options.addOption("h", "help", false, "Show this help and exit");
     options.addOption("v", "version", false, "show the version and exit");
 
@@ -95,7 +105,6 @@ public class StartModeling {
     if (cmd.hasOption("p")) {
       tunePath = new File(cmd.getOptionValue("p"));
       tune = CSVManage.loadCSV(tunePath.getAbsolutePath());
-      tune.setClassIndex(0);
       System.out.println("Tune file: " + tunePath.getAbsolutePath());
     }
 
@@ -117,7 +126,14 @@ public class StartModeling {
             : Collections.emptyList();
 
     Instances data = CSVManage.loadCSV(trainFile.getAbsolutePath());
-    data.setClassIndex(0);
+    if (!(setClassIndex(data, act))) {
+      System.err.println(
+          String.format(
+              "Problems setting class index, train do not have attribute with name:{}", act));
+      System.exit(-1);
+    }
+
+    if (Objects.nonNull(tune)) tune.setClassIndex(data.classIndex());
 
     ArrayList<ASSearch> asSearches = new ArrayList<>(Arrays.asList(new BestFirst()));
 
@@ -138,19 +154,31 @@ public class StartModeling {
         Instances newTest = Objects.nonNull(tune) ? Filter.useFilter(tune, filter) : null;
 
         String pathTune = Objects.nonNull(tunePath) ? tunePath.getAbsolutePath() : null;
-        InitSearchClassificationModel initSearchClassificationModel =
-            new InitSearchClassificationModel(
-                newData,
-                trainFile.getAbsolutePath(),
-                newTest,
-                pathTune,
-                extFolderPath,
-                act,
-                classifierList,
-                asSearches,
-                params);
 
-        initSearchClassificationModel.startSearchModel();
+        AInitSearchModel classSearchModel =
+            cmd.hasOption("b")
+                ? new InitSearchClassificationModelBySeveralModels(
+                    newData,
+                    trainFile.getAbsolutePath(),
+                    newTest,
+                    pathTune,
+                    extFolderPath,
+                    act,
+                    classifierList,
+                    asSearches,
+                    params)
+                : new InitSearchClassificationModel(
+                    newData,
+                    trainFile.getAbsolutePath(),
+                    newTest,
+                    pathTune,
+                    extFolderPath,
+                    act,
+                    classifierList,
+                    asSearches,
+                    params);
+
+        classSearchModel.startSearchModel();
 
       } else {
         List<RegressionOptimizationParam> params =
@@ -158,23 +186,47 @@ public class StartModeling {
                 ? new ArrayList<>(Collections.singletonList(RegressionOptimizationParam.MaeTrain))
                 : new ArrayList<>(Collections.singletonList(RegressionOptimizationParam.Mean));
         String pathTune = Objects.nonNull(tunePath) ? tunePath.getAbsolutePath() : null;
-        InitSearchRegressionModel initSearchRegressionModel =
-            new InitSearchRegressionModel(
-                data,
-                trainFile.getAbsolutePath(),
-                tune,
-                pathTune,
-                extFolderPath,
-                act,
-                classifierList,
-                asSearches,
-                params);
 
-        initSearchRegressionModel.startSearchModel();
+        AInitSearchModel regSearchModel =
+            cmd.hasOption("b")
+                ? new InitSearchRegressionModelBySeveralModels(
+                    data,
+                    trainFile.getAbsolutePath(),
+                    tune,
+                    pathTune,
+                    extFolderPath,
+                    act,
+                    classifierList,
+                    asSearches,
+                    params)
+                : new InitSearchRegressionModel(
+                    data,
+                    trainFile.getAbsolutePath(),
+                    tune,
+                    pathTune,
+                    extFolderPath,
+                    act,
+                    classifierList,
+                    asSearches,
+                    params);
+
+        regSearchModel.startSearchModel();
       }
     } catch (Exception ex) {
       ex.printStackTrace();
       System.exit(-1);
     }
+  }
+
+  protected static boolean setClassIndex(Instances data, String nameAct) {
+    if (data != null) {
+      for (int i = 0; i < data.numAttributes(); i++) {
+        if (data.attribute(i).name().equals(nameAct)) {
+          data.setClassIndex(i);
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

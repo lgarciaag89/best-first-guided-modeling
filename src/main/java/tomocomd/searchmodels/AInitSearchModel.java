@@ -85,11 +85,12 @@ public abstract class AInitSearchModel {
       Instances extInst;
       try {
         extInst = CSVManage.loadCSV(ext.getAbsolutePath());
+        extInst.setClassIndex(trainInstances.classIndex());
       } catch (Exception e) {
         throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
             String.format("Problems loading external dataset:%s", csvFile), e);
       }
-      extInst.setClassIndex(0);
+      extInst.setClassIndex(trainInstances.classIndex());
       extInsts.add(ext.getAbsolutePath());
     }
     return extInsts;

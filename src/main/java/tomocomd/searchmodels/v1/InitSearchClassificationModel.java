@@ -1,44 +1,35 @@
-package tomocomd.searchmodels;
+package tomocomd.searchmodels.v1;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import tomocomd.CSVManage;
 import tomocomd.ModelingException;
+import tomocomd.searchmodels.AInitSearchModel;
+import tomocomd.searchmodels.ClassificationModelInfo;
+import tomocomd.searchmodels.ClassificationOptimizationParam;
 import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.AttributeSelection;
 import weka.classifiers.AbstractClassifier;
 import weka.core.Instances;
 
-public class InitSearchRegressionModel extends AInitSearchModel {
-  private final List<RegressionOptimizationParam> params;
+public class InitSearchClassificationModel extends AInitSearchModel {
 
-  public InitSearchRegressionModel(
-      String csvFile,
-      String tuneSdf,
+  private final List<ClassificationOptimizationParam> params;
+
+  public InitSearchClassificationModel(
+      String train,
+      String tune,
       String folderExtSdf,
       String act,
       List<AbstractClassifier> classifierList,
       List<ASSearch> searchList,
-      List<RegressionOptimizationParam> params) {
-    super(csvFile, tuneSdf, folderExtSdf, act, classifierList, searchList);
+      List<ClassificationOptimizationParam> params) {
+    super(train, tune, folderExtSdf, act, classifierList, searchList);
     this.params = new LinkedList<>(params);
   }
 
-  public InitSearchRegressionModel(
-      Instances data,
-      String csvFile,
-      String tuneSdf,
-      String folderExtSdf,
-      String act,
-      List<AbstractClassifier> classifierList,
-      List<ASSearch> searchList,
-      List<RegressionOptimizationParam> params) {
-    super(data, csvFile, tuneSdf, folderExtSdf, act, classifierList, searchList);
-    this.params = new LinkedList<>(params);
-  }
-
-  public InitSearchRegressionModel(
+  public InitSearchClassificationModel(
       Instances train,
       String csvFile,
       Instances test,
@@ -47,23 +38,24 @@ public class InitSearchRegressionModel extends AInitSearchModel {
       String act,
       List<AbstractClassifier> classifierList,
       List<ASSearch> searchList,
-      List<RegressionOptimizationParam> params) {
+      List<ClassificationOptimizationParam> params) {
     super(train, csvFile, test, tuneSdf, folderExtSdf, act, classifierList, searchList);
     this.params = new LinkedList<>(params);
   }
 
   @Override
   public void startSearchModel() throws ModelingException {
+
     List<String> extInsts = loadingExternalTestPath();
+    long cantModels = 0;
     Instances dataTrainThread = new Instances(trainInstances);
     Instances dataTestThread = Objects.isNull(tuneInstances) ? null : new Instances(tuneInstances);
-
-    List<RegressionModelInfo> models = new LinkedList<>();
+    List<ClassificationModelInfo> models = new LinkedList<>();
     for (AbstractClassifier clas : classifierList) {
       for (ASSearch aSSearch : searchList) {
-        for (RegressionOptimizationParam opt : params) {
+        for (ClassificationOptimizationParam opt : params) {
           try {
-            selectionRegressionOneData(
+            selectionClassificationOne(
                 dataTrainThread,
                 csvFile,
                 dataTestThread,
@@ -72,8 +64,9 @@ public class InitSearchRegressionModel extends AInitSearchModel {
                 opt,
                 clas,
                 aSSearch,
-                0,
+                cantModels,
                 models);
+            cantModels += models.size();
           } catch (Exception ex) {
             throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
                 String.format("Problems building models from %s dataset", csvFile), ex);
@@ -83,20 +76,23 @@ public class InitSearchRegressionModel extends AInitSearchModel {
     }
   }
 
-  private static void selectionRegressionOne(
-      String pathTrain,
-      String pathTest,
-      List<String> extInsts,
+  private static void selectionClassificationOne(
+      String pathCSV,
+      String test,
+      List<String> externals,
       String act,
-      RegressionOptimizationParam opt,
+      ClassificationOptimizationParam opt,
       AbstractClassifier classifier,
       ASSearch aSSearch,
-      long modelId,
-      List<RegressionModelInfo> models)
+      long idModels,
+      List<ClassificationModelInfo> models)
       throws ModelingException {
 
     Instances inst;
-    Instances train = CSVManage.loadCSV(pathTrain);
+    Instances train;
+
+    train = CSVManage.loadCSV(pathCSV);
+    train.setClassIndex(0);
 
     int cIdx = 0;
     int numAtt = train.numAttributes();
@@ -107,24 +103,25 @@ public class InitSearchRegressionModel extends AInitSearchModel {
     }
     train.setClassIndex(cIdx);
 
-    if (pathTest != null) {
-      if (!pathTest.isEmpty()) {
-        inst = new Instances(CSVManage.loadCSV(pathTest));
+    if (test != null) {
+      if (!test.isEmpty()) {
+        inst = new Instances(CSVManage.loadCSV(test));
         inst.setClassIndex(cIdx);
       }
     }
 
-    String nameFile =
-        String.format(
-            "%s_models_%s_%s_%s.csv",
-            pathTrain,
-            classifier.getClass().getSimpleName(),
-            aSSearch.getClass().getSimpleName(),
-            opt.toString());
     AttributeSelection asSubset = new AttributeSelection();
-    SearchRegressionModel search =
-        new SearchRegressionModel(
-            modelId, pathTrain, pathTest, extInsts, nameFile, cIdx, classifier, opt, models);
+    SearchClassificationModelByOneClasifier search =
+        new SearchClassificationModelByOneClasifier(
+            idModels,
+            pathCSV,
+            test,
+            externals,
+            pathCSV + "_models.csv",
+            cIdx,
+            classifier,
+            opt,
+            models);
 
     asSubset.setSearch(aSSearch);
     asSubset.setEvaluator(search);
@@ -137,21 +134,21 @@ public class InitSearchRegressionModel extends AInitSearchModel {
       asSubset.selectedAttributes();
     } catch (Exception ex) {
       throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
-          "Problems building regression models", ex);
+          "Problems building classification models", ex);
     }
   }
 
-  private static void selectionRegressionOneData(
+  private static void selectionClassificationOne(
       Instances data,
       String pathTrain,
       Instances test,
       String pathTest,
-      List<String> extInsts,
-      RegressionOptimizationParam opt,
+      List<String> externals,
+      ClassificationOptimizationParam opt,
       AbstractClassifier classifier,
       ASSearch aSSearch,
-      long modelId,
-      List<RegressionModelInfo> models)
+      long idModels,
+      List<ClassificationModelInfo> models)
       throws ModelingException {
 
     Instances inst = null;
@@ -169,26 +166,26 @@ public class InitSearchRegressionModel extends AInitSearchModel {
             opt.toString());
     AttributeSelection asSubset = new AttributeSelection();
 
-    SearchRegressionModel search =
+    SearchClassificationModelByOneClasifier search =
         Objects.nonNull(test)
-            ? new SearchRegressionModel(
-                modelId,
+            ? new SearchClassificationModelByOneClasifier(
+                idModels,
                 data,
                 pathTrain,
                 inst,
                 pathTest,
-                extInsts,
+                externals,
                 nameFile,
                 cIdx,
                 classifier,
                 opt,
                 models)
-            : new SearchRegressionModel(
-                modelId,
+            : new SearchClassificationModelByOneClasifier(
+                idModels,
                 data,
                 pathTrain,
                 pathTest,
-                extInsts,
+                externals,
                 nameFile,
                 cIdx,
                 classifier,
@@ -199,14 +196,14 @@ public class InitSearchRegressionModel extends AInitSearchModel {
     asSubset.setEvaluator(search);
     asSubset.setXval(false);
 
-    Instances redTrain = new Instances(data);
+    Instances redTrain = new Instances(data, 0, 1);
 
     try {
       asSubset.SelectAttributes(redTrain);
       asSubset.selectedAttributes();
     } catch (Exception ex) {
       throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
-          "Problems building regression models", ex);
+          "Problems building classification models", ex);
     }
   }
 }

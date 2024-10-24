@@ -54,7 +54,7 @@ public class CSVManage {
     return f.getAbsolutePath();
   }
 
-  public static Instances loadCSV(String path) throws ModelingException {
+  public static synchronized Instances loadCSV(String path) throws ModelingException {
 
     try {
       CSVLoader l = new CSVLoader();

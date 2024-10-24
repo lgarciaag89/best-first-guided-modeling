@@ -3,33 +3,37 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tomocomd.searchmodels;
+package tomocomd.searchmodels.v2;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import tomocomd.ModelingException;
+import tomocomd.searchmodels.RegressionModelInfo;
+import tomocomd.searchmodels.RegressionOptimizationParam;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.lazy.IBk;
 import weka.core.Instances;
 
-public class SearchRegressionModel extends ASearchModel {
+public class SearchRegressionModelBySeveralClassifier extends ASearchModelBySeveralClassifiers {
 
+  private static final String FORMAT = "%s,%s";
   private final RegressionOptimizationParam opt;
   private List<RegressionModelInfo> listMInfo;
 
-  public SearchRegressionModel(
+  public SearchRegressionModelBySeveralClassifier(
       long mId,
       String trainPath,
       String testPath,
       List<String> externalTestPath,
       String pathToSave,
       int classAct,
-      AbstractClassifier cls,
+      List<AbstractClassifier> cls,
       RegressionOptimizationParam oP,
       List<RegressionModelInfo> modelInfoList)
       throws ModelingException {
@@ -40,7 +44,7 @@ public class SearchRegressionModel extends ASearchModel {
     listMInfo = modelInfoList;
   }
 
-  public SearchRegressionModel(
+  public SearchRegressionModelBySeveralClassifier(
       long mId,
       Instances data,
       String trainPath,
@@ -48,7 +52,7 @@ public class SearchRegressionModel extends ASearchModel {
       List<String> externalTestPath,
       String pathToSave,
       int classAct,
-      AbstractClassifier cls,
+      List<AbstractClassifier> cls,
       RegressionOptimizationParam oP,
       List<RegressionModelInfo> modelInfoList)
       throws ModelingException {
@@ -59,7 +63,7 @@ public class SearchRegressionModel extends ASearchModel {
     listMInfo = modelInfoList;
   }
 
-  public SearchRegressionModel(
+  public SearchRegressionModelBySeveralClassifier(
       long mId,
       Instances data,
       String trainPath,
@@ -68,7 +72,7 @@ public class SearchRegressionModel extends ASearchModel {
       List<String> externalTestPath,
       String pathToSave,
       int classAct,
-      AbstractClassifier cls,
+      List<AbstractClassifier> cls,
       RegressionOptimizationParam oP,
       List<RegressionModelInfo> modelInfoList)
       throws ModelingException {
@@ -87,6 +91,44 @@ public class SearchRegressionModel extends ASearchModel {
 
     double valReg = 0;
 
+    for (AbstractClassifier classifier : classifiers) {
+
+      Instances localTrain = new Instances(train);
+      localTrain.setClassIndex(classAct);
+      Instances localInternalTest =
+          Objects.nonNull(internalTest) ? new Instances(internalTest) : null;
+      if (Objects.nonNull(localInternalTest)) localInternalTest.setClassIndex(classAct);
+
+      List<Instances> localExternalTests = Collections.emptyList();
+      if (Objects.nonNull(externalTests)) {
+        localExternalTests =
+            externalTests.stream()
+                .map(
+                    data -> {
+                      Instances localData = new Instances(data);
+                      localData.setClassIndex(classAct);
+                      return localData;
+                    })
+                .collect(Collectors.toList());
+      }
+      valReg =
+          Math.max(
+              valReg,
+              evaluateOneClass(
+                  localTrain, localInternalTest, localExternalTests, mdRegNames, classifier));
+    }
+
+    return valReg;
+  }
+
+  @Override
+  protected double evaluateOneClass(
+      Instances train,
+      Instances internalTest,
+      List<Instances> externalTests,
+      Set<String> mdRegNames,
+      AbstractClassifier classifier) {
+    double valReg = 0;
     try {
       AbstractClassifier clasTmp = (AbstractClassifier) AbstractClassifier.makeCopy(classifier);
       if (clasTmp instanceof IBk) ((IBk) clasTmp).setKNN(Math.max(10, train.numInstances() / 10));
@@ -101,7 +143,8 @@ public class SearchRegressionModel extends ASearchModel {
 
       double rSE;
       double maeE;
-      double rmseE = 0;
+      double rmseE;
+
       if (internalTest != null) {
         Evaluation rfEvaTest = new Evaluation(train);
         rfEvaTest.evaluateModel(copies[0], internalTest);
@@ -170,14 +213,14 @@ public class SearchRegressionModel extends ASearchModel {
           if (extHead.isEmpty()) {
             extHead = headPart;
           } else {
-            extHead = String.format("%s,%s", extHead, headPart);
+            extHead = String.format(FORMAT, extHead, headPart);
           }
         }
       }
       line =
           extHead.isEmpty()
-              ? String.format("%s,desc\n", head)
-              : String.format("%s,%s,desc\n", head, extHead);
+              ? String.format("%s,desc%n", head)
+              : String.format("%s,%s,desc%n", head, extHead);
     }
     line += res;
 
@@ -209,14 +252,14 @@ public class SearchRegressionModel extends ASearchModel {
     if (testPath != null) res = String.format("%s,%.5f,%.5f,%.5f", res, q2Ext, maeExt, rmseE);
 
     if (!resExternal.isEmpty()) {
-      res = String.format("%s,%s", res, resExternal);
+      res = String.format(FORMAT, res, resExternal);
     }
 
-    res = String.format("%s,%s", res, mdNames.toString().replace(",", " "));
+    res = String.format(FORMAT, res, mdNames.toString().replace(",", " "));
 
     listMInfo.add(
         new RegressionModelInfo(
-            classifier,
+            clasTmp,
             ++modelId,
             mdNames.size(),
             q2,
