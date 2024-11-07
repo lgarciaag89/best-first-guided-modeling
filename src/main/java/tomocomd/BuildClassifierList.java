@@ -1,10 +1,9 @@
-package tomocomd.searchmodels.deprecated;
+package tomocomd;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import tomocomd.BuildClassifier;
 import weka.classifiers.AbstractClassifier;
 
 public class BuildClassifierList {

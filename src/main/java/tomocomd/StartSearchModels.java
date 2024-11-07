@@ -3,7 +3,6 @@ package tomocomd;
 import java.io.File;
 import java.util.*;
 import org.apache.commons.cli.*;
-import tomocomd.searchmodels.deprecated.BuildClassifierList;
 import tomocomd.searchmodels.v3.InitSearchModel;
 import tomocomd.searchmodels.v3.utils.DefiningCMDOptions;
 import tomocomd.searchmodels.v3.utils.MetricType;
