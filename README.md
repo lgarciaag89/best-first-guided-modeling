@@ -22,18 +22,15 @@ A java application to guide the modeling process using a best-first search algor
 ### Execution
 
 ```bash
-java -jar best-first-guided-modeling.jar -h
+java -jar best-first-guided-modeling-{v}.jar -h
 ```
 ```
-usage: java -jar best-first-guided-modeling.jar  [-h] [-v]
-                                                 [-t <arg>] [-e <arg>] 
-                                                 [-p <arg>] [-x <arg>]
-                                                 [-m <arg>] [-c] 
+usage: cmd [-c] [-e <arg>] [-h] [-m <arg>] [-p <arg>] [-s] [-t <arg>] [-v]
+       [-x <arg>]
  -c,--classification   it is a classification problem, if it is a
                        regression problem not set this option
- -e,--endpoint <arg>   activity/property target
+ -e,--endpoint <arg>   property target
  -h,--help             Show this help and exit
- -v,--version          show the version and exit
  -m,--models <arg>     List with the desirable strategies,
                        [KNN(C,R),RandomForest(C,R),Adaboost(C),BayesNet(C)
                        ,Gradient(C),J48(C),Logistic(C),
@@ -44,7 +41,12 @@ usage: java -jar best-first-guided-modeling.jar  [-h] [-v]
                        LinerRegression(R)], all indicates all the
                        possibles strategies
  -p,--test <arg>       input, test dataset, csv format
- -t,--train <arg>      input, train dataset, csv format
+ -s,--short            If it is set, the search will be short means that
+                       only one search will execute, and all the
+                       classification algorithm will execute in the same
+                       path, is faster but may fall into local optima
+ -t,--train <arg>      input, train dataset
+ -v,--version          show the version and exit
  -x,--external <arg>   input, external folder with several external
                        datasets, csv format
 ```

@@ -5,6 +5,8 @@
  */
 package tomocomd;
 
+import weka.attributeSelection.ASSearch;
+import weka.attributeSelection.BestFirst;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
@@ -335,16 +337,9 @@ public class BuildClassifier {
     return new LibSVM();
   }
 
-  public static AbstractClassifier getClassifier(String name) {
-    switch (name) {
-      case "Ibk":
-        return getKnn(10);
-      case "Logistic":
-        return getLogistic();
-      case "SimpleLogistic":
-        return getsimpleLogistic();
-      default:
-        return getRandomForest();
-    }
+  public static ASSearch getBestFirst() {
+    BestFirst bf = new BestFirst();
+    bf.setDirection(new SelectedTag(2, BestFirst.TAGS_SELECTION));
+    return bf;
   }
 }

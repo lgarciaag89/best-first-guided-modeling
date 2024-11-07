@@ -84,7 +84,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>tomocomd.StartModeling</mainClass>
+                            <mainClass>tomocomd.StartSearchModels</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
