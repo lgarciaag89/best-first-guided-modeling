@@ -91,10 +91,10 @@ public class StartSearchModels {
   private static List<MetricType> getMetrics(boolean isClassification, boolean hasTune) {
     return isClassification
         ? hasTune
-            ? Collections.singletonList(MetricType.MCC_MEAN)
+            ? Arrays.asList(MetricType.MCC_MEAN, MetricType.MCC_TRAIN, MetricType.MCC_TEST)
             : Collections.singletonList(MetricType.MCC_TRAIN)
         : hasTune
-            ? Collections.singletonList(MetricType.MAE_MEAN)
-            : Collections.singletonList(MetricType.MAE_TRAIN);
+            ? Arrays.asList(MetricType.Q2_TRAIN, MetricType.Q2_EXT, MetricType.Q2_MEAN)
+            : Collections.singletonList(MetricType.Q2_TRAIN);
   }
 }
