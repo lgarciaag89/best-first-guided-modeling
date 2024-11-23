@@ -83,7 +83,6 @@ public class BuildClassifierList {
         BuildClassifier.getRandomTree(),
         BuildClassifier.getSMO(),
         BuildClassifier.getSVM(),
-        BuildClassifier.getRegression(),
         BuildClassifier.getJ48());
   }
 
