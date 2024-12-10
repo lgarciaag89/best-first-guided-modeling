@@ -1,4 +1,4 @@
-package tomocomd.searchmodels.v3.utils;
+package tomocomd.utils;
 
 import org.apache.commons.cli.*;
 
@@ -38,6 +38,13 @@ public class DefiningCMDOptions {
         "If it is set, the search will be short means that only one search will execute, and all the classification algorithm will execute in the same path, is faster but may fall into local optima");
     options.addOption("h", "help", false, "Show this help and exit");
     options.addOption("v", "version", false, "show the version and exit");
+
+    options.addOption(
+        "f", "filter", false, "execute filters operations(entropy(se), Pearson correlation(r))");
+    options.addOption("pt", "pearson-threshold", true, "Pearson correlation threshold");
+    options.addOption("se", "se-threshold", true, "Shannon entropy threshold");
+    options.addOption("r", "reduce", false, "reduce the number of attributes");
+
     return options;
   }
 

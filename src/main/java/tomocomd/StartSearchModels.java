@@ -1,14 +1,13 @@
 package tomocomd;
 
 import java.io.File;
-import java.util.*;
+import java.util.Objects;
 import org.apache.commons.cli.*;
-import tomocomd.searchmodels.v3.InitSearchModel;
-import tomocomd.searchmodels.v3.utils.DefiningCMDOptions;
-import tomocomd.searchmodels.v3.utils.MetricType;
-import tomocomd.searchmodels.v3.utils.SearchPath;
-import weka.attributeSelection.ASSearch;
-import weka.classifiers.AbstractClassifier;
+import tomocomd.filters.ApplyFilter;
+import tomocomd.reduce.Reducing;
+import tomocomd.searchmodels.v3.BuildModels;
+import tomocomd.utils.Constants;
+import tomocomd.utils.DefiningCMDOptions;
 
 public class StartSearchModels {
   public static void main(String[] args) {
@@ -58,43 +57,33 @@ public class StartSearchModels {
       System.out.println("External folder: " + extFolderPath.getAbsolutePath());
     }
 
-    boolean isClassification = cmd.hasOption('c');
-    boolean isShort = cmd.hasOption('s');
-
-    List<AbstractClassifier> classifierList =
-        cmd.hasOption("m")
-            ? BuildClassifierList.getclassifierList(cmd.getOptionValues("m"), isClassification)
-            : Collections.emptyList();
-
-    ArrayList<ASSearch> asSearches =
-        new ArrayList<>(Collections.singletonList(BuildClassifier.getBestFirst()));
-    List<MetricType> metrics = getMetrics(isClassification, cmd.hasOption("t"));
-
-    try {
-      InitSearchModel initSearchModel =
-          new InitSearchModel(
-              trainFile,
-              tunePath,
-              extFolderPath,
-              act,
-              classifierList,
-              asSearches,
-              metrics,
-              isShort ? SearchPath.SHORT : SearchPath.LONG);
-      initSearchModel.initSearchModel();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      System.exit(-1);
+    if (cmd.hasOption("f")) {
+      ApplyFilter filters = new ApplyFilter();
+      if(filters.initFilter(trainFile, tunePath, extFolderPath, act, cmd)) {
+        trainFile = new File(trainFile.getAbsolutePath() + Constants.FILTER_MARK);
+        if (Objects.nonNull(tunePath)) {
+          tunePath = new File(tunePath.getAbsolutePath() + Constants.FILTER_MARK);
+        }
+        if (Objects.nonNull(extFolderPath)) {
+          extFolderPath = new File(extFolderPath.getAbsolutePath() + Constants.FILTER_MARK_FOLDER);
+        }
+      }
     }
-  }
 
-  private static List<MetricType> getMetrics(boolean isClassification, boolean hasTune) {
-    return isClassification
-        ? hasTune
-            ? Arrays.asList(MetricType.MCC_MEAN, MetricType.MCC_TRAIN, MetricType.MCC_TEST)
-            : Collections.singletonList(MetricType.MCC_TRAIN)
-        : hasTune
-            ? Arrays.asList(MetricType.Q2_TRAIN, MetricType.Q2_EXT, MetricType.Q2_MEAN)
-            : Collections.singletonList(MetricType.Q2_TRAIN);
+    if (cmd.hasOption("r")) {
+      if(Reducing.applyReduce(trainFile, tunePath, extFolderPath, act, cmd.hasOption("c"))){
+        trainFile = new File(trainFile.getAbsolutePath() + Constants.REDUCE_MARK);
+        if (Objects.nonNull(tunePath)) {
+          tunePath = new File(tunePath.getAbsolutePath() + Constants.REDUCE_MARK);
+        }
+        if (Objects.nonNull(extFolderPath)) {
+          extFolderPath = new File(extFolderPath.getAbsolutePath() + Constants.REDUCE_MARK_FOLDER);
+        }
+      }
+    }
+
+    if (cmd.hasOption("m")) {
+      BuildModels.buildModels(trainFile, tunePath, extFolderPath, act, cmd);
+    }
   }
 }

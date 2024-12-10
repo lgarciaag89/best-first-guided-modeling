@@ -6,16 +6,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-import tomocomd.CSVManage;
 import tomocomd.ModelingException;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.SearchPath;
+import tomocomd.utils.ReadData;
 import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.AttributeSelection;
 import weka.classifiers.AbstractClassifier;
 import weka.core.Instances;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.NumericToNominal;
 
 public class InitSearchModel {
 
@@ -41,7 +39,8 @@ public class InitSearchModel {
       List<AbstractClassifier> classifierList,
       List<ASSearch> searchList,
       List<MetricType> metricTypes,
-      SearchPath searchPath)
+      SearchPath searchPath,
+      boolean isClassification)
       throws ModelingException {
 
     this.searchPath = searchPath;
@@ -50,33 +49,13 @@ public class InitSearchModel {
     this.classifiers = new LinkedList<>(classifierList);
     this.csvTrainFileName = csvFile;
 
-    // get train data
-    Instances tempTrainData = CSVManage.loadCSV(csvFile.getAbsolutePath());
-    tempTrainData.setRelationName(csvFile.getName());
-    if (!setClassIndex(tempTrainData, act))
-      throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
-          String.format("Problems loading %s target in train dataset", act));
-    trainData =
-        metricTypes.get(0).getProblemType().equals(MetricType.ProblemType.REGRESSION)
-            ? tempTrainData
-            : setTargetAttributeAsNominal(tempTrainData, tempTrainData.classIndex());
-
+    trainData = ReadData.readTrainData(csvFile, act, isClassification);
     // get tune data
-    this.csvTuneFileName = Objects.nonNull(tuneCsv) ? tuneCsv.getName() : null;
-    Instances tuneData =
-        Objects.nonNull(tuneCsv) ? CSVManage.loadCSV(tuneCsv.getAbsolutePath()) : null;
-    if (Objects.nonNull(tuneData)) {
-      tuneData.setClassIndex(tempTrainData.classIndex());
-      tuneData.setRelationName(tuneCsv.getName());
-      testData =
-          metricTypes.get(0).getProblemType().equals(MetricType.ProblemType.REGRESSION)
-              ? tuneData
-              : setTargetAttributeAsNominal(tuneData, tempTrainData.classIndex());
-    } else testData = null;
+    testData = ReadData.readTuneData(tuneCsv, trainData.classIndex(), isClassification);
+    this.csvTuneFileName = Objects.nonNull(testData) ? testData.relationName() : null;
 
     externalTestData =
-        loadingExternalTestPath(
-            folderExtCsvs, tempTrainData.classIndex(), metricTypes.get(0).getProblemType());
+        ReadData.loadingExternalTestPath(folderExtCsvs, trainData.classIndex(), isClassification);
     externalTestNames =
         externalTestData.stream().map(Instances::relationName).collect(Collectors.toList());
   }
@@ -167,78 +146,5 @@ public class InitSearchModel {
       throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
           "Problems building classification models", ex);
     }
-  }
-
-  //
-  //    private void setclass(){
-  //        if(metricType.getProblemType().equals(MetricType.ProblemType.CLASSIFICATION)) {
-  //            trainData = setTargetAttributeAsNominal(tempTrainData, act);
-  //            testData = setTargetAttributeAsNominal(tuneData, act);
-  //            para los external tmb
-  //        }else {
-  //            trainData = tempTrainData;
-  //        }
-  //    }
-
-  private List<Instances> loadingExternalTestPath(
-      File folderExt, int classIdx, MetricType.ProblemType problemType) throws ModelingException {
-
-    if (folderExt == null) return Collections.emptyList();
-
-    if (!folderExt.exists() || !folderExt.isDirectory())
-      throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
-          String.format("External folder do not  exist:%s", folderExt.getAbsolutePath()));
-
-    File[] csvExts = folderExt.listFiles((dir, name) -> name.endsWith(".csv"));
-    if (Objects.isNull(csvExts)) return Collections.emptyList();
-    Arrays.sort(csvExts);
-
-    List<Instances> extInsts = new ArrayList<>();
-    for (File ext : csvExts) {
-      Instances extInst;
-      try {
-        extInst = CSVManage.loadCSV(ext.getAbsolutePath());
-        extInst.setClassIndex(classIdx);
-        extInst.setRelationName(ext.getName());
-        extInsts.add(
-            problemType.equals(MetricType.ProblemType.CLASSIFICATION)
-                ? setTargetAttributeAsNominal(extInst, classIdx)
-                : extInst);
-      } catch (Exception e) {
-        throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
-            String.format("Problems loading external dataset:%s", ext.getName()), e);
-      }
-    }
-    return extInsts;
-  }
-
-  private Instances setTargetAttributeAsNominal(Instances data, int actIdx) {
-    try {
-      NumericToNominal filter = new NumericToNominal();
-      filter.setAttributeIndicesArray(new int[] {actIdx});
-      filter.setInputFormat(data);
-      Instances newData = Filter.useFilter(data, filter);
-      newData.setClassIndex(actIdx);
-      newData.setRelationName(data.relationName());
-      return newData;
-    } catch (Exception ex) {
-      throw ModelingException.ExceptionType.CSV_FILE_LOADING_EXCEPTION.get(
-          String.format(
-              "Problems setting target attribute idx %d as nominal for %s dataset",
-              actIdx, data.relationName()),
-          ex);
-    }
-  }
-
-  private static boolean setClassIndex(Instances data, String nameAct) {
-    if (data != null) {
-      for (int i = 0; i < data.numAttributes(); i++) {
-        if (data.attribute(i).name().equals(nameAct)) {
-          data.setClassIndex(i);
-          return true;
-        }
-      }
-    }
-    return false;
   }
 }

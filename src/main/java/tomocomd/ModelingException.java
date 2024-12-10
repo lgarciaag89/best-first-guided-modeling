@@ -28,7 +28,9 @@ public class ModelingException extends RuntimeException {
     CSV_FILE_LOADING_EXCEPTION("Error loading csv file"),
     LOAD_DATASET_EXCEPTION("Error writing csv file"),
     BUILDING_MODEL_EXCEPTION("Error building model"),
-    CLASSIFIER_LOAD_EXCEPTION("Error loading the classifier");
+    CLASSIFIER_LOAD_EXCEPTION("Error loading the classifier"),
+    FILTERING_EXCEPTION("Error applying filter operation"),
+    REDUCE_EXCEPTION("Error applying reduce operation");
 
     private final String message;
 

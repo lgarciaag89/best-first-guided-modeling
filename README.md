@@ -10,6 +10,23 @@ Meantime the repo is private we will get this message:
 
 ![Latest Release](https://img.shields.io/github/v/release/cicese-biocom/best-first-guided-modeling?label=latest&style=flat-square)
 
+-c
+-e
+Class
+-m
+all
+-t
+"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\app_out.csv_best1482.csv"
+-p
+"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\app_out.csv_best1482.csv_TS_starPep_AP.fasta.csv"
+-x
+"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\external"
+-r
+-f
+-pt
+0.4
+-se
+0.1
 
 
 
