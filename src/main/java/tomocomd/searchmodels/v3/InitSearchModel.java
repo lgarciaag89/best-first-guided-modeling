@@ -49,13 +49,12 @@ public class InitSearchModel {
     this.classifiers = new LinkedList<>(classifierList);
     this.csvTrainFileName = csvFile;
 
-    trainData = ReadData.readTrainData(csvFile, act, isClassification);
+    trainData = ReadData.readData(csvFile, act, isClassification);
     // get tune data
-    testData = ReadData.readTuneData(tuneCsv, trainData.classIndex(), isClassification);
+    testData = ReadData.readData(tuneCsv, act, isClassification);
     this.csvTuneFileName = Objects.nonNull(testData) ? testData.relationName() : null;
 
-    externalTestData =
-        ReadData.loadingExternalTestPath(folderExtCsvs, trainData.classIndex(), isClassification);
+    externalTestData = ReadData.loadingExternalTestPath(folderExtCsvs, act, isClassification);
     externalTestNames =
         externalTestData.stream().map(Instances::relationName).collect(Collectors.toList());
   }

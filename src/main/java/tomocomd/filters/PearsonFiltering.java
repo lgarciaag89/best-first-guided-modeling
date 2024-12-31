@@ -1,26 +1,40 @@
 package tomocomd.filters;
 
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import tomocomd.ModelingException;
+import java.util.stream.IntStream;
+import tomocomd.utils.PearsonCorrelationBetweenAttributes;
+import tomocomd.utils.TriangularMatrixAsVector;
 import weka.core.Instances;
 
-public class PearsonFiltering implements Filter {
+public class PearsonFiltering {
   public PearsonFiltering() {}
 
-  @Override
-  public Boolean passFilter(Instances data, Integer attributeIdx, Double threshold)
-      throws ModelingException {
-    if (data.classIndex() < 0)
-      throw ModelingException.ExceptionType.FILTERING_EXCEPTION.get("Class index not set");
-    PearsonsCorrelation pearsonsCorrelation = new PearsonsCorrelation();
-    double[] classValues = data.attributeToDoubleArray(data.classIndex());
-    double[] attributeValues = data.attributeToDoubleArray(attributeIdx);
-    double correlation = pearsonsCorrelation.correlation(classValues, attributeValues);
-    return correlation > threshold;
-  }
+  public static int[] getCorrelated(Instances data, double threshold) {
+    TriangularMatrixAsVector triangularMatrixAsVector =
+        PearsonCorrelationBetweenAttributes.computeCorrelationMatrix(data);
+    int size = data.numAttributes();
+    int classIndex = data.classIndex();
 
-  @Override
-  public FilterType getType() {
-    return FilterType.R;
+    boolean[] alreadyCorrelated = new boolean[size];
+
+    return IntStream.range(0, size)
+        .filter(i -> i != classIndex)
+        .flatMap(
+            i ->
+                IntStream.range(0, i)
+                    .filter(
+                        j ->
+                            j != classIndex
+                                && !alreadyCorrelated[j]
+                                && triangularMatrixAsVector.getEntry(i, j) > threshold)
+                    .map(
+                        j -> {
+                          int correlatedIndex =
+                              data.attribute(i).weight() > data.attribute(j).weight() ? j : i;
+                          alreadyCorrelated[correlatedIndex] = true;
+                          return correlatedIndex;
+                        }))
+        .distinct()
+        .sorted()
+        .toArray();
   }
 }

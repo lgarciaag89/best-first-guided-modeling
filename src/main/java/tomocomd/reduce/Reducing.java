@@ -16,10 +16,10 @@ public class Reducing {
 
   public static boolean applyReduce(
       File trainFile, File tunePath, File extFolderPath, String act, boolean isClassification) {
-    Instances trainData = ReadData.readTrainData(trainFile, act, isClassification);
-    Instances testData = ReadData.readTuneData(tunePath, trainData.classIndex(), isClassification);
+    Instances trainData = ReadData.readData(trainFile, act, isClassification);
+    Instances testData = ReadData.readData(tunePath, act, isClassification);
     List<Instances> externalTestData =
-        ReadData.loadingExternalTestPath(extFolderPath, trainData.classIndex(), isClassification);
+        ReadData.loadingExternalTestPath(extFolderPath, act, isClassification);
 
     int[] bestFirstSelected;
     try {
@@ -40,7 +40,7 @@ public class Reducing {
 
     int[] positions =
         selectors.stream()
-            .map(evaluator -> applyRanker(trainData, evaluator, bestFirstSelected.length-1))
+            .map(evaluator -> applyRanker(trainData, evaluator, bestFirstSelected.length - 1))
             .filter(Objects::nonNull)
             .flatMapToInt(Arrays::stream)
             .distinct()
@@ -57,17 +57,20 @@ public class Reducing {
           filteredTune, tunePath.getAbsolutePath() + Constants.REDUCE_MARK);
     }
 
-    File externalFilterFolder =
-        new File(extFolderPath.getAbsolutePath() + Constants.REDUCE_MARK_FOLDER);
-    externalFilterFolder.mkdir();
-    externalTestData.forEach(
-        ext -> {
-          Instances filteredExt = Removing.executeRemove(ext, positions, true);
-          CSVManage.saveDescriptorMResult(
-              filteredExt,
-              new File(externalFilterFolder, ext.relationName() + Constants.REDUCE_MARK)
-                  .getAbsolutePath());
-        });
+    if (Objects.nonNull(extFolderPath)) {
+      File externalFilterFolder =
+          new File(extFolderPath.getAbsolutePath() + Constants.REDUCE_MARK_FOLDER);
+
+      externalFilterFolder.mkdir();
+      externalTestData.forEach(
+          ext -> {
+            Instances filteredExt = Removing.executeRemove(ext, positions, true);
+            CSVManage.saveDescriptorMResult(
+                filteredExt,
+                new File(externalFilterFolder, ext.relationName() + Constants.REDUCE_MARK)
+                    .getAbsolutePath());
+          });
+    }
     return true;
   }
 
@@ -90,7 +93,7 @@ public class Reducing {
 
   public static int[] cfsBestFirst(Instances train) throws Exception {
     AttributeSelection asCfsSubsetEvalForw = new AttributeSelection();
-    asCfsSubsetEvalForw.setEvaluator(new CfsSubsetEval());
+    asCfsSubsetEvalForw.setEvaluator(new CfsSubsetEvalDiscretePrecision());
     BestFirst bf = new BestFirst();
     bf.setOptions(new String[] {"-D", "2"});
     asCfsSubsetEvalForw.setSearch(bf);

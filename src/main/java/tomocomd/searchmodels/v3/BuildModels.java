@@ -26,11 +26,11 @@ public class BuildModels {
             ? BuildClassifierList.getclassifierList(cmd.getOptionValues("m"), isClassification)
             : Collections.emptyList();
 
-    ArrayList<ASSearch> asSearches =
-        new ArrayList<>(Collections.singletonList(BuildClassifier.getBestFirst()));
     List<MetricType> metrics = getMetrics(isClassification, cmd.hasOption("t"));
 
     try {
+      ArrayList<ASSearch> asSearches =
+          new ArrayList<>(Collections.singletonList(BuildClassifier.getBestFirst()));
       InitSearchModel initSearchModel =
           new InitSearchModel(
               trainFile,

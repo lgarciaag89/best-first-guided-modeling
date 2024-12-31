@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Objects;
 import org.apache.commons.cli.*;
 import tomocomd.filters.ApplyFilter;
+import tomocomd.filters.ReorderData;
 import tomocomd.reduce.Reducing;
 import tomocomd.searchmodels.v3.BuildModels;
 import tomocomd.utils.Constants;
@@ -57,9 +58,20 @@ public class StartSearchModels {
       System.out.println("External folder: " + extFolderPath.getAbsolutePath());
     }
 
+    if (cmd.hasOption("o")) {
+      ReorderData.reorder(trainFile, tunePath, extFolderPath, act);
+      trainFile = new File(trainFile.getAbsolutePath() + Constants.REVERSE_MARK);
+      if (Objects.nonNull(tunePath)) {
+        tunePath = new File(tunePath.getAbsolutePath() + Constants.REVERSE_MARK);
+      }
+      if (Objects.nonNull(extFolderPath)) {
+        extFolderPath = new File(extFolderPath.getAbsolutePath() + Constants.REVERSE_MARK_FOLDER);
+      }
+    }
+
     if (cmd.hasOption("f")) {
       ApplyFilter filters = new ApplyFilter();
-      if(filters.initFilter(trainFile, tunePath, extFolderPath, act, cmd)) {
+      if (filters.initFilter(trainFile, tunePath, extFolderPath, act, cmd)) {
         trainFile = new File(trainFile.getAbsolutePath() + Constants.FILTER_MARK);
         if (Objects.nonNull(tunePath)) {
           tunePath = new File(tunePath.getAbsolutePath() + Constants.FILTER_MARK);
@@ -71,7 +83,7 @@ public class StartSearchModels {
     }
 
     if (cmd.hasOption("r")) {
-      if(Reducing.applyReduce(trainFile, tunePath, extFolderPath, act, cmd.hasOption("c"))){
+      if (Reducing.applyReduce(trainFile, tunePath, extFolderPath, act, cmd.hasOption("c"))) {
         trainFile = new File(trainFile.getAbsolutePath() + Constants.REDUCE_MARK);
         if (Objects.nonNull(tunePath)) {
           tunePath = new File(tunePath.getAbsolutePath() + Constants.REDUCE_MARK);

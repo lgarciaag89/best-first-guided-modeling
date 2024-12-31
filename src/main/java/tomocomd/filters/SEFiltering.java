@@ -13,6 +13,7 @@ public class SEFiltering implements Filter {
     double maxSE = Math.log(data.numInstances());
 
     double entropy = SEAttribute.computeEntropy(data.attributeToDoubleArray(attributeIdx));
+    data.attribute(attributeIdx).setWeight(entropy);
     return entropy > maxSE * threshold;
   }
 

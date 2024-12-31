@@ -10,30 +10,24 @@ import weka.filters.unsupervised.attribute.NumericToNominal;
 
 public class ReadData {
 
-  public static Instances readTrainData(File csvFile, String act, boolean isClassification)
+  public static Instances readData(File csvFile, String act, boolean isClassification)
       throws ModelingException {
-    Instances tempTrainData = CSVManage.loadCSV(csvFile.getAbsolutePath());
-    tempTrainData.setRelationName(csvFile.getName());
-    if (!setClassIndex(tempTrainData, act))
+    if (Objects.isNull(csvFile)) return null;
+    Instances tempData = CSVManage.loadCSV(csvFile.getAbsolutePath());
+    if (Objects.isNull(tempData))
+      throw ModelingException.ExceptionType.CSV_FILE_LOADING_EXCEPTION.get(
+          String.format("Problems loading %s dataset", csvFile.getName()));
+    tempData.setRelationName(csvFile.getName());
+    if (!setClassIndex(tempData, act))
       throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
           String.format("Problems loading %s target in train dataset", act));
     return isClassification
-        ? setTargetAttributeAsNominal(tempTrainData, tempTrainData.classIndex())
-        : tempTrainData;
-  }
-
-  public static Instances readTuneData(File tuneCsv, int classIndex, boolean isClassification) {
-    Instances tuneData =
-        Objects.nonNull(tuneCsv) ? CSVManage.loadCSV(tuneCsv.getAbsolutePath()) : null;
-    if (Objects.nonNull(tuneData)) {
-      tuneData.setClassIndex(classIndex);
-      tuneData.setRelationName(tuneCsv.getName());
-      return isClassification ? setTargetAttributeAsNominal(tuneData, classIndex) : tuneData;
-    } else return null;
+        ? setTargetAttributeAsNominal(tempData, tempData.classIndex())
+        : tempData;
   }
 
   public static List<Instances> loadingExternalTestPath(
-      File folderExt, int classIdx, boolean isClassification) throws ModelingException {
+      File folderExt, String act, boolean isClassification) throws ModelingException {
 
     if (folderExt == null) return Collections.emptyList();
 
@@ -47,12 +41,8 @@ public class ReadData {
 
     List<Instances> extInsts = new ArrayList<>();
     for (File ext : csvExts) {
-      Instances extInst;
       try {
-        extInst = CSVManage.loadCSV(ext.getAbsolutePath());
-        extInst.setClassIndex(classIdx);
-        extInst.setRelationName(ext.getName());
-        extInsts.add(isClassification ? setTargetAttributeAsNominal(extInst, classIdx) : extInst);
+        extInsts.add(readData(ext, act, isClassification));
       } catch (Exception e) {
         throw ModelingException.ExceptionType.CSV_FILE_WRITING_EXCEPTION.get(
             String.format("Problems loading external dataset:%s", ext.getName()), e);
@@ -61,7 +51,7 @@ public class ReadData {
     return extInsts;
   }
 
-  private static boolean setClassIndex(Instances data, String nameAct) {
+  public static boolean setClassIndex(Instances data, String nameAct) {
     if (data != null) {
       for (int i = 0; i < data.numAttributes(); i++) {
         if (data.attribute(i).name().equals(nameAct)) {

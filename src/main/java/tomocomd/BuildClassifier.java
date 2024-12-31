@@ -337,9 +337,9 @@ public class BuildClassifier {
     return new LibSVM();
   }
 
-  public static ASSearch getBestFirst() {
+  public static ASSearch getBestFirst() throws Exception {
     BestFirst bf = new BestFirst();
-    bf.setDirection(new SelectedTag(2, BestFirst.TAGS_SELECTION));
+    bf.setOptions(new String[] {"-D", "2"});
     return bf;
   }
 }

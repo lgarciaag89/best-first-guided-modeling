@@ -44,6 +44,7 @@ public class DefiningCMDOptions {
     options.addOption("pt", "pearson-threshold", true, "Pearson correlation threshold");
     options.addOption("se", "se-threshold", true, "Shannon entropy threshold");
     options.addOption("r", "reduce", false, "reduce the number of attributes");
+    options.addOption("o", "reorder", false, "reverse order of attributes");
 
     return options;
   }
