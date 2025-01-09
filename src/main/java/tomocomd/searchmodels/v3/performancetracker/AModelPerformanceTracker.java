@@ -9,6 +9,11 @@ import tomocomd.searchmodels.v3.performancetracker.metricvalues.IMetricValue;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.SMOreg;
+import weka.classifiers.lazy.IBk;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public abstract class AModelPerformanceTracker {
@@ -33,9 +38,19 @@ public abstract class AModelPerformanceTracker {
       Classifier classifier, Instances train, Instances tune) throws ModelingException;
 
   protected void getClassifierName(AbstractClassifier clasTmp) {
-    clasName = clasTmp.getClass().getSimpleName();
-    if (clasName.equals("IBk")) {
+    if (clasTmp instanceof IBk) {
       clasName = String.format("KNN(%s)", clasTmp.toString().split(" ")[3]);
+    } else if (clasTmp instanceof SMO) {
+      clasName = String.format("SMO(%s)", ((SMO) clasTmp).getKernel().getClass().getSimpleName());
+    } else if (clasTmp instanceof SMOreg) {
+      clasName =
+          String.format("SMO(%s)", ((SMOreg) clasTmp).getKernel().getClass().getSimpleName());
+    } else if (clasTmp instanceof Bagging) {
+      clasName = clasTmp instanceof RandomForest ? "RandomForest" :
+          String.format(
+              "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
+    } else {
+      clasName = clasTmp.getClass().getSimpleName();
     }
   }
 

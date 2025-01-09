@@ -13,6 +13,10 @@ import tomocomd.utils.ReadData;
 import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.AttributeSelection;
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.SMOreg;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public class InitSearchModel {
@@ -78,7 +82,7 @@ public class InitSearchModel {
                   "%s_models%s_%s_%s.csv",
                   csvTrainFileName.getAbsolutePath(),
                   classifierSubList.size() == 1
-                      ? "_" + classifierSubList.get(0).getClass().getSimpleName()
+                      ? "_" + getClassifierName(classifierSubList.get(0))
                       : "",
                   metricType.toString(),
                   search.getClass().getSimpleName());
@@ -116,6 +120,20 @@ public class InitSearchModel {
       }
     } finally {
       executorService.shutdown();
+    }
+  }
+
+  private String getClassifierName(AbstractClassifier clasTmp) {
+    if (clasTmp instanceof SMO) {
+      return String.format("SMO(%s)", ((SMO) clasTmp).getKernel().getClass().getSimpleName());
+    } else if (clasTmp instanceof SMOreg) {
+      return String.format("SMO(%s)", ((SMOreg) clasTmp).getKernel().getClass().getSimpleName());
+    } else if (clasTmp instanceof Bagging) {
+      return clasTmp instanceof RandomForest ? "RandomForest" :
+              String.format(
+                      "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
+    } else {
+      return clasTmp.getClass().getSimpleName();
     }
   }
 

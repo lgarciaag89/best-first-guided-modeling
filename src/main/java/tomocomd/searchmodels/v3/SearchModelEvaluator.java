@@ -11,6 +11,8 @@ import tomocomd.searchmodels.v3.utils.printhead.PrintResultFactory;
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.SubsetEvaluator;
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.lazy.IBk;
+import weka.classifiers.meta.Bagging;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
@@ -104,6 +106,16 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
     return classifiers.stream()
         .map(
             classifier -> {
+              if (classifier instanceof IBk) {
+                ((IBk) classifier).setKNN((int) Math.sqrt(train.numInstances()));
+              }
+
+              if (classifier instanceof Bagging
+                  && ((Bagging) classifier).getClassifier() instanceof IBk) {
+                ((IBk) ((Bagging) classifier).getClassifier())
+                    .setKNN((int) Math.sqrt(train.numInstances()));
+              }
+
               AModelPerformanceTracker tracker =
                   ModelPerformanceTrackerFactory.createModelPerformanceTracker(metricType);
               double valueToCompare =

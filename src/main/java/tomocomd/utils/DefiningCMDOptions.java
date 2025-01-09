@@ -7,26 +7,30 @@ public class DefiningCMDOptions {
   public static Options getOptions() {
     Options options = new Options();
 
-    options.addOption("t", "train", true, "input, train dataset");
+    options.addOption("t", "train", true, "Input training dataset in CSV format.");
     options.addOption("p", "test", true, "input, test dataset, csv format");
     options.addOption(
-        "x", "external", true, "input, external folder with several external datasets, csv format");
-    options.addOption("e", "endpoint", true, "property target");
+        "x", "external", true, "External folder with several additional datasets in CSV format.");
+    options.addOption(
+        "e",
+        "endpoint",
+        true,
+        "Target property, specifies the name of the variable to be used as the target.");
     options.addOption(
         "c",
         "classification",
         false,
-        "it is a classification problem, if it is a regression problem not set this option");
+        "Specifies that the problem is a classification problem. If it's a regression problem, do not set this option.");
 
     Option opt =
         new Option(
             "m",
             "models",
             true,
-            "List with the desirable strategies, "
-                + "[KNN(C,R),RandomForest(C,R),Adaboost(C),BayesNet(C),Gradient(C),J48(C),Logistic(C), LogitBoost(C),"
-                + "SimpleLogistic(C), MultiBost(C), NaiveBayes(C),RacedIncrementalLogitBoost(C) RandomCommittee(C,R),"
-                + " RandomTree(C), SMO(C,R), SVM(C), MultilayerPerceptron(R), LinerRegression(R)], all indicates all the possibles strategies");
+            "Space separate list of desired strategies. The strategies are: "
+                + "[KNN(C,R), RandomForest(C,R), Adaboost(C), AdditiveRegression(R), BayesNet(C), LogitBoost(C), "
+                + "RandomCommittee(C,R), SMO-PolyKernel(C,R), SMO-Puk(C,R), LinerRegression(R), Gaussian(R), "
+                + "Bagging-SMO(C,R),  Bagging-KNN(C,R)], where C=Classification, R=Regression.  Use \"all\" to apply all possible models");
     opt.setOptionalArg(false);
     opt.setArgs(Option.UNLIMITED_VALUES);
     options.addOption(opt);
@@ -35,16 +39,27 @@ public class DefiningCMDOptions {
         "s",
         "short",
         false,
-        "If it is set, the search will be short means that only one search will execute, and all the classification algorithm will execute in the same path, is faster but may fall into local optima");
-    options.addOption("h", "help", false, "Show this help and exit");
-    options.addOption("v", "version", false, "show the version and exit");
+        "If set, the search will be faster but may fall into local optima. Only one search will execute, and all classification algorithms will execute along the same path.");
+    options.addOption("h", "help", false, "Displays this help message and exits.");
+    options.addOption("v", "version", false, "Displays the version of the program and exits.");
 
     options.addOption(
-        "f", "filter", false, "execute filters operations(entropy(se), Pearson correlation(r))");
-    options.addOption("pt", "pearson-threshold", true, "Pearson correlation threshold");
-    options.addOption("se", "se-threshold", true, "Shannon entropy threshold");
-    options.addOption("r", "reduce", false, "reduce the number of attributes");
-    options.addOption("o", "reorder", false, "reverse order of attributes");
+        "f",
+        "filter",
+        false,
+        "Execute filter operations (e.g., Shannon entropy (-se), Pearson correlation (-r)).");
+    options.addOption(
+        "pt",
+        "pearson-threshold",
+        true,
+        "Pearson correlation threshold for eliminating highly correlated attributes.");
+    options.addOption(
+        "se",
+        "se-threshold",
+        true,
+        "Shannon entropy threshold for reducing the number of attributes.");
+    options.addOption("r", "reduce", false, "Reduces the number of attributes.");
+    options.addOption("o", "reorder", false, "Reverses the order of the attributes.");
 
     return options;
   }
@@ -56,7 +71,6 @@ public class DefiningCMDOptions {
     HelpFormatter help = new HelpFormatter();
     try {
       cmd = parser.parse(options, args);
-      System.out.println("Command line: " + String.join(" ", args));
     } catch (ParseException ex) {
       help.printHelp("cmd", options, true);
       System.err.println("Problems parsing command line:" + ex.getMessage());
@@ -67,9 +81,10 @@ public class DefiningCMDOptions {
       help.printHelp("cmd", options, true);
       System.exit(0);
     } else if (cmd.hasOption("v")) {
-      System.out.println("build-tomocomd-models 1.0");
+      System.out.println(VersionUtil.getVersionInfo());
       System.exit(0);
     }
+    System.out.println("Command line: " + String.join(" ", args));
     return cmd;
   }
 }

@@ -133,6 +133,10 @@
                         <manifest>
                             <mainClass>tomocomd.StartSearchModels</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Build-Java-Version>${java.version}</Build-Java-Version>
+                        </manifestEntries>
                     </archive>
                 </configuration>
                 <executions>

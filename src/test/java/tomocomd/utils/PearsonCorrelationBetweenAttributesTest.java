@@ -2,7 +2,6 @@ package tomocomd.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import weka.core.Attribute;

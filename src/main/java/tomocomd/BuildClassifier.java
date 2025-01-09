@@ -9,7 +9,6 @@ import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.BestFirst;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.bayes.BayesNet;
-import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.bayes.net.estimate.BayesNetEstimator;
 import weka.classifiers.bayes.net.estimate.SimpleEstimator;
 import weka.classifiers.bayes.net.search.local.K2;
@@ -17,12 +16,10 @@ import weka.classifiers.bayes.net.search.local.LocalScoreSearchAlgorithm;
 import weka.classifiers.bayes.net.search.local.Scoreable;
 import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
+import weka.classifiers.functions.supportVector.Puk;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.meta.*;
-import weka.classifiers.trees.DecisionStump;
-import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
-import weka.classifiers.trees.RandomTree;
 import weka.core.EuclideanDistance;
 import weka.core.SelectedTag;
 import weka.core.neighboursearch.LinearNNSearch;
@@ -54,7 +51,7 @@ public class BuildClassifier {
     return rf;
   }
 
-  public static AbstractClassifier getSMO() {
+  private static SMO getSmo() {
     SMO smo = new SMO();
     smo.setBatchSize("100");
     smo.setBuildCalibrationModels(false);
@@ -67,14 +64,19 @@ public class BuildClassifier {
     smo.setRandomSeed(1);
     smo.setNumFolds(-1);
     smo.setToleranceParameter(0.001);
-    smo.setCalibrator(getLogistic());
     smo.setFilterType(new SelectedTag(SMO.FILTER_NORMALIZE, SMO.TAGS_FILTER));
-    PolyKernel ker = new PolyKernel();
-    ker.setCacheSize(250007);
-    ker.setDebug(false);
-    ker.setExponent(1);
-    ker.setUseLowerOrder(false);
-    smo.setKernel(ker);
+    return smo;
+  }
+
+  public static AbstractClassifier getSMOPolyKernel() {
+    SMO smo = getSmo();
+    smo.setKernel(new PolyKernel());
+    return smo;
+  }
+
+  public static AbstractClassifier getSMOPuk() {
+    SMO smo = getSmo();
+    smo.setKernel(new Puk());
     return smo;
   }
 
@@ -86,7 +88,7 @@ public class BuildClassifier {
     return classifier;
   }
 
-  public static AbstractClassifier getSMOReg() {
+  private static SMOreg getSMOReg() {
     SMOreg smo = new SMOreg();
     smo.setBatchSize("100");
     smo.setC(1);
@@ -94,79 +96,30 @@ public class BuildClassifier {
     smo.setDoNotCheckCapabilities(false);
     smo.setNumDecimalPlaces(2);
     smo.setFilterType(new SelectedTag(SMO.FILTER_NORMALIZE, SMO.TAGS_FILTER));
-    PolyKernel ker = new PolyKernel();
-    ker.setCacheSize(250007);
-    ker.setDebug(false);
-    ker.setExponent(1);
-    ker.setUseLowerOrder(false);
-    smo.setKernel(ker);
     return smo;
   }
 
-  public static AbstractClassifier getLogistic() {
-    Logistic logistic = new Logistic();
-    logistic.setBatchSize("100");
-    logistic.setDebug(false);
-    logistic.setDoNotCheckCapabilities(false);
-    logistic.setNumDecimalPlaces(4);
-    logistic.setMaxIts(-1);
-    logistic.setRidge(0.00000001);
-    logistic.setUseConjugateGradientDescent(false);
-    return logistic;
+  public static AbstractClassifier getSMORegPolyKernel() {
+    SMOreg smo = getSMOReg();
+    smo.setKernel(new PolyKernel());
+    return smo;
   }
 
-  public static AbstractClassifier getRandomTree() {
-    RandomTree tree = new RandomTree();
-    tree.setKValue(0);
-    tree.setAllowUnclassifiedInstances(false);
-    tree.setBatchSize("100");
-    tree.setBreakTiesRandomly(false);
-    tree.setDebug(false);
-    tree.setDoNotCheckCapabilities(false);
-    tree.setMaxDepth(0);
-    tree.setMinNum(1);
-    tree.setMinVarianceProp(0.001);
-    tree.setNumDecimalPlaces(2);
-    tree.setNumFolds(0);
-    tree.setSeed(1);
-    return tree;
+  public static AbstractClassifier getSMORegPuk() {
+    SMOreg smo = getSMOReg();
+    smo.setKernel(new Puk());
+    return smo;
   }
 
-  public static AbstractClassifier getKnn(int k) {
-    IBk ibk = new IBk(k);
-    ibk.setBatchSize("100");
-    ibk.setDebug(false);
-    ibk.setDoNotCheckCapabilities(false);
-
-    ibk.setCrossValidate(false);
-    ibk.setDistanceWeighting(new SelectedTag(IBk.WEIGHT_NONE, IBk.TAGS_WEIGHTING));
-    ibk.setMeanSquared(false);
-    ibk.setNumDecimalPlaces(2);
-    ibk.setWindowSize(0);
-
-    NearestNeighbourSearch nns = new LinearNNSearch();
-    nns.setMeasurePerformance(false);
-    EuclideanDistance ed = new EuclideanDistance();
-    ed.setDontNormalize(false);
-    ed.setInvertSelection(false);
-    ed.setAttributeIndices("first-last");
-    try {
-      nns.setDistanceFunction(ed);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    ibk.setNearestNeighbourSearchAlgorithm(nns);
-    return ibk;
-  }
-
-  public static AbstractClassifier getKnnCV(int k) {
-    IBk ibk = new IBk(k);
+  //  set k = sqrt(size), size = number instances, wwight set 1/n
+  public static AbstractClassifier getKnnCV() {
+    IBk ibk = new IBk();
     ibk.setBatchSize("100");
     ibk.setDebug(false);
     ibk.setDoNotCheckCapabilities(false);
 
     ibk.setCrossValidate(true);
-    ibk.setDistanceWeighting(new SelectedTag(IBk.WEIGHT_NONE, IBk.TAGS_WEIGHTING));
+    ibk.setDistanceWeighting(new SelectedTag(IBk.WEIGHT_INVERSE, IBk.TAGS_WEIGHTING));
     ibk.setMeanSquared(false);
     ibk.setNumDecimalPlaces(2);
     ibk.setWindowSize(0);
@@ -184,59 +137,6 @@ public class BuildClassifier {
     }
     ibk.setNearestNeighbourSearchAlgorithm(nns);
     return ibk;
-  }
-
-  public static AbstractClassifier getNaiveBayes() {
-    NaiveBayes nb = new NaiveBayes();
-    nb.setBatchSize("100");
-    nb.setDebug(false);
-    nb.setDoNotCheckCapabilities(false);
-    nb.setNumDecimalPlaces(2);
-
-    nb.setDisplayModelInOldFormat(false);
-    nb.setUseKernelEstimator(false);
-    nb.setUseSupervisedDiscretization(false);
-    return nb;
-  }
-
-  public static AbstractClassifier getJ48() {
-    J48 j48 = new J48();
-    j48.setBatchSize("100");
-    j48.setDebug(false);
-    j48.setDoNotCheckCapabilities(false);
-    j48.setNumDecimalPlaces(2);
-
-    j48.setBinarySplits(false);
-    j48.setCollapseTree(true);
-    j48.setConfidenceFactor((float) 0.25);
-    j48.setDoNotMakeSplitPointActualValue(false);
-    j48.setMinNumObj(2);
-    j48.setNumFolds(3);
-    j48.setReducedErrorPruning(false);
-    j48.setSaveInstanceData(false);
-    j48.setSeed(1);
-    j48.setSubtreeRaising(true);
-    j48.setUnpruned(false);
-    j48.setUseLaplace(false);
-    j48.setUseMDLcorrection(true);
-    return j48;
-  }
-
-  public static AbstractClassifier getsimpleLogistic() {
-    SimpleLogistic sl = new SimpleLogistic();
-    sl.setBatchSize("100");
-    sl.setDebug(false);
-    sl.setDoNotCheckCapabilities(false);
-    sl.setNumDecimalPlaces(2);
-
-    sl.setErrorOnProbabilities(false);
-    sl.setHeuristicStop(50);
-    sl.setMaxBoostingIterations(500);
-    sl.setNumBoostingIterations(0);
-    sl.setUseAIC(false);
-    sl.setUseCrossValidation(true);
-    sl.setWeightTrimBeta(0);
-    return sl;
   }
 
   public static AbstractClassifier getBayesNet() {
@@ -262,6 +162,12 @@ public class BuildClassifier {
     return by;
   }
 
+  public static AbstractClassifier getGaussianProcess() {
+    GaussianProcesses gp = new GaussianProcesses();
+    gp.setKernel(new Puk());
+    return gp;
+  }
+
   public static AbstractClassifier getAdaBoostM1() {
     AdaBoostM1 ab = new AdaBoostM1();
     ab.setBatchSize("100");
@@ -273,8 +179,13 @@ public class BuildClassifier {
     ab.setSeed(1);
     ab.setUseResampling(false);
     ab.setWeightThreshold(100);
-    DecisionStump ds = new DecisionStump();
-    ab.setClassifier(ds);
+    ab.setClassifier(getSMOPuk()); // set with SMoPUk
+    return ab;
+  }
+
+  public static AbstractClassifier getAdditiveRegression() {
+    AdditiveRegression ab = new AdditiveRegression();
+    ab.setClassifier(BuildClassifier.getSMOPuk()); // set with SMoPUk
     return ab;
   }
 
@@ -289,8 +200,7 @@ public class BuildClassifier {
     lb.setSeed(1);
     lb.setUseResampling(false);
     lb.setWeightThreshold(100);
-    DecisionStump ds = new DecisionStump();
-    lb.setClassifier(ds);
+    lb.setClassifier(getRandomForest()); // set random forest
 
     lb.setZMax(3);
     lb.setLikelihoodThreshold(-1.7976931348623157E308);
@@ -300,6 +210,27 @@ public class BuildClassifier {
     lb.setUseEstimatedPriors(false);
     lb.setUseResampling(false);
     return lb;
+  }
+
+  //  add bagging con smopuk reg
+  public static AbstractClassifier getBaggingSMOregPuk() {
+    Bagging bagging = new Bagging();
+    bagging.setClassifier(getSMORegPuk());
+    return bagging;
+  }
+
+  //  add bagging con smo
+  public static AbstractClassifier getBaggingSMOPuk() {
+    Bagging bagging = new Bagging();
+    bagging.setClassifier(getSMOPuk());
+    return bagging;
+  }
+
+  //  add bagging con knn
+  public static AbstractClassifier getBaggingKnn() {
+    Bagging bagging = new Bagging();
+    bagging.setClassifier(getKnnCV());
+    return bagging;
   }
 
   public static AbstractClassifier getRandomCommittee() {
@@ -315,26 +246,6 @@ public class BuildClassifier {
 
     rc.setClassifier(getRandomForest());
     return rc;
-  }
-
-  public static AbstractClassifier getPLS() {
-    return new PLSClassifier();
-  }
-
-  public static AbstractClassifier getRacedIncrementalLogitBoost() {
-    return new RacedIncrementalLogitBoost();
-  }
-
-  public static AbstractClassifier getGradient() {
-    return new Grading();
-  }
-
-  public static AbstractClassifier getMultiBoost() {
-    return new MultiBoostAB();
-  }
-
-  public static AbstractClassifier getSVM() {
-    return new LibSVM();
   }
 
   public static ASSearch getBestFirst() throws Exception {

@@ -28,39 +28,35 @@ public class BuildClassifierList {
   public static AbstractClassifier getClassifier(String name, boolean isClassification) {
     switch (name.toLowerCase()) {
       case "knn":
-        return BuildClassifier.getKnnCV(10);
+        return BuildClassifier.getKnnCV();
       case "randomforest":
         return BuildClassifier.getRandomForest();
       case "adaboost":
         return isClassification ? BuildClassifier.getAdaBoostM1() : null;
+      case "additiveregression":
+        return isClassification ? null : BuildClassifier.getAdditiveRegression();
       case "bayesnet":
         return isClassification ? BuildClassifier.getBayesNet() : null;
-      case "gradient":
-        return isClassification ? BuildClassifier.getGradient() : null;
-      case "logistic":
-        return isClassification ? BuildClassifier.getLogistic() : null;
       case "logitboost":
         return isClassification ? BuildClassifier.getLogitBoost() : null;
-      case "simplelogistic":
-        return isClassification ? BuildClassifier.getsimpleLogistic() : null;
-      case "multibost":
-        return isClassification ? BuildClassifier.getMultiBoost() : null;
-      case "naivebayes":
-        return isClassification ? BuildClassifier.getNaiveBayes() : null;
-      case "racedincrementallogitboost":
-        return isClassification ? BuildClassifier.getRacedIncrementalLogitBoost() : null;
       case "randomcommittee":
         return BuildClassifier.getRandomCommittee();
-      case "randomtree":
-        return isClassification ? BuildClassifier.getRandomTree() : null;
-      case "smo":
-        return isClassification ? BuildClassifier.getSMO() : BuildClassifier.getSMOReg();
-      case "svm":
-        return isClassification ? BuildClassifier.getSVM() : null;
-      case "linerregression":
+      case "smo-polykernel":
+        return isClassification
+            ? BuildClassifier.getSMOPolyKernel()
+            : BuildClassifier.getSMORegPolyKernel();
+      case "smo-puk":
+        return isClassification ? BuildClassifier.getSMOPuk() : BuildClassifier.getSMORegPuk();
+      case "linearegression":
         return isClassification ? null : BuildClassifier.getRegression();
-      case "j48":
-        return isClassification ? BuildClassifier.getJ48() : null;
+      case "gaussian":
+        return isClassification ? null : BuildClassifier.getGaussianProcess();
+      case "bagging-smo":
+        return isClassification
+            ? BuildClassifier.getBaggingSMOPuk()
+            : BuildClassifier.getBaggingSMOregPuk();
+      case "bagging-knn":
+        return BuildClassifier.getBaggingKnn();
       default:
         return null;
     }
@@ -68,30 +64,29 @@ public class BuildClassifierList {
 
   private static List<AbstractClassifier> getClassifierList() {
     return Arrays.asList(
-        BuildClassifier.getKnnCV(10),
+        BuildClassifier.getKnnCV(),
         BuildClassifier.getRandomForest(),
         BuildClassifier.getAdaBoostM1(),
         BuildClassifier.getBayesNet(),
-        BuildClassifier.getGradient(),
-        BuildClassifier.getLogistic(),
         BuildClassifier.getLogitBoost(),
-        BuildClassifier.getsimpleLogistic(),
-        BuildClassifier.getMultiBoost(),
-        BuildClassifier.getNaiveBayes(),
-        BuildClassifier.getRacedIncrementalLogitBoost(),
         BuildClassifier.getRandomCommittee(),
-        BuildClassifier.getRandomTree(),
-        BuildClassifier.getSMO(),
-        BuildClassifier.getSVM(),
-        BuildClassifier.getJ48());
+        BuildClassifier.getSMOPolyKernel(),
+        BuildClassifier.getSMOPuk(),
+        BuildClassifier.getBaggingSMOPuk(),
+        BuildClassifier.getBaggingKnn());
   }
 
   private static List<AbstractClassifier> getRegressionList() {
     return Arrays.asList(
-        BuildClassifier.getRegression(),
-        BuildClassifier.getKnnCV(10),
+            BuildClassifier.getKnnCV(),
         BuildClassifier.getRandomForest(),
-        BuildClassifier.getRandomCommittee(),
-        BuildClassifier.getSMOReg());
+            BuildClassifier.getAdditiveRegression(),
+            BuildClassifier.getRandomCommittee(),
+            BuildClassifier.getSMORegPolyKernel(),
+            BuildClassifier.getSMORegPuk(),
+            BuildClassifier.getRegression(),
+        BuildClassifier.getGaussianProcess(),
+        BuildClassifier.getBaggingSMOregPuk(),
+        BuildClassifier.getBaggingKnn());
   }
 }

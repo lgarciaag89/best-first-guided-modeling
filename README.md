@@ -10,65 +10,159 @@ Meantime the repo is private we will get this message:
 
 ![Latest Release](https://img.shields.io/github/v/release/cicese-biocom/best-first-guided-modeling?label=latest&style=flat-square)
 
--c
--e
-Class
--m
-all
--t
-"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\app_out.csv_best1482.csv"
--p
-"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\app_out.csv_best1482.csv_TS_starPep_AP.fasta.csv"
--x
-"C:\Users\lgarc\OneDrive - CICESE\Documentos\00-WORK\Research\AMPs\Datasets Table 2B_ampdiscover\modeling\APP\ejec1\best\external"
--r
--f
--pt
-0.4
--se
-0.1
-
-
-
-
 ## Description
+
 <div style="text-align: justify;">
-A java application to guide the modeling process using a best-first search algorithm. The application uses a set of machine learning algorithms to generate models and evaluate them using a 10-cross-validation strategy with external validations. The application uses the AUC metric to evaluate the models. The application uses the Weka library to generate and evaluate the generated models.
+A java application to guide the modeling process using a best-first search algorithm. The application uses a set of machine learning algorithms to generate models and evaluate them using a 10-cross-validation strategy with external validations. The application uses multiple evaluation metrics to assess the models. The application uses the Weka library to generate and evaluate the generated models.
 </div>
 
 ### Execution
 
-```bash
-java -jar best-first-guided-modeling-{v}.jar -h
+The application can be executed using the following command:
+
 ```
-```
-usage: cmd [-c] [-e <arg>] [-h] [-m <arg>] [-p <arg>] [-s] [-t <arg>] [-v]
-       [-x <arg>]
- -c,--classification   it is a classification problem, if it is a
-                       regression problem not set this option
- -e,--endpoint <arg>   property target
- -h,--help             Show this help and exit
- -m,--models <arg>     List with the desirable strategies,
-                       [KNN(C,R),RandomForest(C,R),Adaboost(C),BayesNet(C)
-                       ,Gradient(C),J48(C),Logistic(C),
-                       LogitBoost(C),SimpleLogistic(C), MultiBost(C),
-                       NaiveBayes(C),RacedIncrementalLogitBoost(C)
-                       RandomCommittee(C,R), RandomTree(C), SMO(C,R),
-                       SVM(C), MultilayerPerceptron(R),
-                       LinerRegression(R)], all indicates all the
-                       possibles strategies
- -p,--test <arg>       input, test dataset, csv format
- -s,--short            If it is set, the search will be short means that
-                       only one search will execute, and all the
-                       classification algorithm will execute in the same
-                       path, is faster but may fall into local optima
- -t,--train <arg>      input, train dataset
- -v,--version          show the version and exit
- -x,--external <arg>   input, external folder with several external
-                       datasets, csv format
+usage: cmd [-c] [-e <arg>] [-f] [-h] [-m <arg>] [-o] [-p <arg>] [-pt
+       <arg>] [-r] [-s] [-se <arg>] [-t <arg>] [-v] [-x <arg>]
+ -c,--classification             Specifies that the problem is a
+                                 classification problem. If it's a
+                                 regression problem, do not set this
+                                 option.
+ -e,--endpoint <arg>             Target property, specifies the name of
+                                 the variable to be used as the target.
+ -f,--filter                     Execute filter operations (e.g., Shannon
+                                 entropy (-se), Pearson correlation (-r)).
+ -h,--help                       Displays this help message and exits.
+ -m,--models <arg>               Space separate list of desired
+                                 strategies. The strategies are:
+                                 [KNN(C,R), RandomForest(C,R),
+                                 Adaboost(C), AdditiveRegression(R),
+                                 BayesNet(C), LogitBoost(C),
+                                 RandomCommittee(C,R),
+                                 SMO-PolyKernel(C,R), SMO-Puk(C,R),
+                                 LinerRegression(R), Gaussian(R),
+                                 Bagging-SMO(C,R),  Bagging-KNN(C,R)],
+                                 where C=Classification, R=Regression.
+                                 Use "all" to apply all possible models
+ -o,--reorder                    Reverses the order of the attributes.
+ -p,--test <arg>                 input, test dataset, csv format
+ -pt,--pearson-threshold <arg>   Pearson correlation threshold for
+                                 eliminating highly correlated attributes.
+ -r,--reduce                     Reduces the number of attributes.
+ -s,--short                      If set, the search will be faster but may
+                                 fall into local optima. Only one search
+                                 will execute, and all classification
+                                 algorithms will execute along the same
+                                 path.
+ -se,--se-threshold <arg>        Shannon entropy threshold for reducing
+                                 the number of attributes.
+ -t,--train <arg>                Input training dataset in CSV format.
+ -v,--version                    Displays the version of the program and
+                                 exits.
+ -x,--external <arg>             External folder with several additional
+                                 datasets in CSV format.
 ```
 
+#### Examples
+
+Applying a reducing strategy to the dataset:
+
+```
+java -jar best-first-guided-modeling-{version}.jar -r -e TARGET -t PATH_CSV
+```
+
+Applying a filtering and reduction strategy to the dataset: attributes with a Shannon Entropy (SE) lower than 0.25 will
+be removed. Additionally, a Pearson correlation filter is applied. For each pair of attributes with a correlation higher
+than 0.9, the attribute with the lower SE will be removed.
+
+```
+java -jar best-first-guided-modeling-{version}.jar -f -se 0.25 -pt 0.90 -r -e TARGET -t PATH_CSV
+```
+
+Applying a classification strategy, using Random Forest, KNN and SMO, to the dataset after filtering and reducing the
+attributes:
+
+```
+java -jar best-first-guided-modeling-{version}.jar -f -se 0.25 -pt 0.90 -r -e TARGET -c -m RandomForest SMO KNN -t TRAIN_PATH_FILE_CSV -p TEST_PATH_FILE_CSV -x EXTERNAL_PATH_FOLDER
+```
+
+### Modeling strategies
+
+The application uses the following strategies to guide the modeling process:
+<table style="margin-left:auto; margin-right:auto;text-align: center;">
+  <tr>
+    <th>Strategy</th>
+    <th>Is for classification</th>
+    <th>Is for regression</th>
+  </tr>
+  <tr>
+    <td>KNN</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+   <tr>
+    <td>Random Forest</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>AdaBoost</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;"></td>
+  </tr>
+   <tr>
+    <td>Additive Regression</td>
+    <td style="text-align: center;"></td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>Bayes Net</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;"></td>
+  </tr>
+<tr>
+    <td>Logit Boost</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;"></td>
+  </tr>
+<tr>
+    <td>Random Committee</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>SMO with Poly Kernel</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>SMO with Puk Kernel</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>Linear Regression</td>
+    <td style="text-align: center;"></td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>Gaussian</td>
+    <td style="text-align: center;"></td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>Bagging with SMO</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+<tr>
+    <td>Bagging with KNN</td>
+    <td style="text-align: center;">X</td>
+    <td style="text-align: center;">X</td>
+  </tr>
+</table>
+
 # Contributors
+
 <a href="https://github.com/lgarciaag89">
     <img src="https://github.com/lgarciaag89.png" width="50" style="border-radius: 50%;" alt="Luis" />
 </a>
