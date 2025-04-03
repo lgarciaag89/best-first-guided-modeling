@@ -2,6 +2,7 @@ package tomocomd.searchmodels.v3;
 
 import java.util.*;
 import java.util.stream.IntStream;
+import tomocomd.ClassifierNameEnum;
 import tomocomd.ModelingException;
 import tomocomd.searchmodels.v3.performancetracker.AModelPerformanceTracker;
 import tomocomd.searchmodels.v3.performancetracker.ModelPerformanceTrackerFactory;
@@ -10,9 +11,6 @@ import tomocomd.searchmodels.v3.utils.printhead.APrintResult;
 import tomocomd.searchmodels.v3.utils.printhead.PrintResultFactory;
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.SubsetEvaluator;
-import weka.classifiers.AbstractClassifier;
-import weka.classifiers.lazy.IBk;
-import weka.classifiers.meta.Bagging;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
@@ -32,7 +30,7 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
   protected final int classAct;
   protected long modelId;
   protected final MetricType metricType;
-  protected final List<AbstractClassifier> classifiers;
+  protected final List<ClassifierNameEnum> classifiersName;
   protected final APrintResult printResult;
 
   public SearchModelEvaluator(
@@ -45,7 +43,7 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
       String pathToSave,
       int classAct,
       MetricType metricType,
-      List<AbstractClassifier> classifiers) {
+      List<ClassifierNameEnum> classifiersName) {
     this.trainPath = trainPath;
     this.trainTotal = trainTotal;
     this.testTotal = testTotal;
@@ -56,7 +54,7 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
     this.classAct = classAct;
     this.modelId = 0;
     this.metricType = metricType;
-    this.classifiers = classifiers;
+    this.classifiersName = classifiersName;
     this.printResult = PrintResultFactory.createPrintResult(metricType);
     printResult.createHead(Objects.nonNull(testPath), externalTestPath, pathToSave);
   }
@@ -103,21 +101,19 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
 
     Set<String> mdNames = getMDNames(train);
 
-    return classifiers.stream()
+    return classifiersName.stream()
         .map(
             classifier -> {
-              if (classifier instanceof IBk) {
-                ((IBk) classifier).setKNN((int) Math.sqrt(train.numInstances()));
-              }
-
-              if (classifier instanceof Bagging
-                  && ((Bagging) classifier).getClassifier() instanceof IBk) {
-                ((IBk) ((Bagging) classifier).getClassifier())
-                    .setKNN((int) Math.sqrt(train.numInstances()));
-              }
-
               AModelPerformanceTracker tracker =
                   ModelPerformanceTrackerFactory.createModelPerformanceTracker(metricType);
+              System.out.println(
+                  "Running model: "
+                      + classifier
+                      + " for "
+                      + train.numAttributes()
+                      + " attributes and "
+                      + train.numInstances()
+                      + " instances");
               double valueToCompare =
                   tracker.getModelPerformance(classifier, train, internalTest, externalTests);
 

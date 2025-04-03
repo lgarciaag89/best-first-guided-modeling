@@ -25,7 +25,7 @@ public class PearsonFiltering {
                         j ->
                             j != classIndex
                                 && !alreadyCorrelated[j]
-                                && triangularMatrixAsVector.getEntry(i, j) > threshold)
+                                && Math.abs(triangularMatrixAsVector.getEntry(i, j)) > threshold)
                     .map(
                         j -> {
                           int correlatedIndex =

@@ -16,6 +16,11 @@ public abstract class ARegressionModelPerformanceTracker extends AModelPerforman
   protected ARegressionModelPerformanceTracker() {}
 
   @Override
+  public boolean isClassification() {
+    return false;
+  }
+
+  @Override
   protected void evaluateTrainData(Classifier classifier, Instances train)
       throws ModelingException {
     try {

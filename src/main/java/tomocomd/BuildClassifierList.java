@@ -3,90 +3,83 @@ package tomocomd;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import tomocomd.searchmodels.v3.utils.MetricType;
 import weka.classifiers.AbstractClassifier;
 
 public class BuildClassifierList {
 
   protected BuildClassifierList() {}
 
-  public static List<AbstractClassifier> getclassifierList(
+  public static List<ClassifierNameEnum> getClassifierNameList(
       String[] models, boolean isClassification) {
-    Optional<String> hasExists =
-        Arrays.stream(models).filter(model -> model.equals("all")).findFirst();
-    if (hasExists.isPresent()) {
-      return isClassification ? getClassifierList() : getRegressionList();
+
+    List<ClassifierNameEnum> validClassifiers =
+        Arrays.stream(ClassifierNameEnum.values())
+            .filter(
+                enumValue ->
+                    (isClassification
+                            && enumValue.getProblemType() == MetricType.ProblemType.CLASSIFICATION)
+                        || (!isClassification
+                            && enumValue.getProblemType() == MetricType.ProblemType.REGRESSION)
+                        || enumValue.getProblemType()
+                            == MetricType.ProblemType.REGRESSION_CLASSIFICATION)
+            .collect(Collectors.toList());
+
+    if (Arrays.asList(models).contains("all")) {
+      return validClassifiers;
     }
 
     return Arrays.stream(models)
-        .map(model -> getClassifier(model, isClassification))
+        .map(
+            name -> {
+              try {
+                ClassifierNameEnum classifier = ClassifierNameEnum.fromString(name);
+                return validClassifiers.contains(classifier) ? classifier : null;
+              } catch (IllegalArgumentException e) {
+                System.out.println("Model not valid: " + name);
+                return null;
+              }
+            })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  public static AbstractClassifier getClassifier(String name, boolean isClassification) {
-    switch (name.toLowerCase()) {
-      case "knn":
+  public static AbstractClassifier getClassifier(
+      ClassifierNameEnum name, boolean isClassification) {
+    switch (name) {
+      case KNN:
         return BuildClassifier.getKnnCV();
-      case "randomforest":
+      case RANDOMFOREST:
         return BuildClassifier.getRandomForest();
-      case "adaboost":
+      case ADABOOST:
         return isClassification ? BuildClassifier.getAdaBoostM1() : null;
-      case "additiveregression":
+      case ADDITIVEREGRESSION:
         return isClassification ? null : BuildClassifier.getAdditiveRegression();
-      case "bayesnet":
+      case BAYESNET:
         return isClassification ? BuildClassifier.getBayesNet() : null;
-      case "logitboost":
+      case LOGITBOOST:
         return isClassification ? BuildClassifier.getLogitBoost() : null;
-      case "randomcommittee":
+      case RANDOMCOMMITTEE:
         return BuildClassifier.getRandomCommittee();
-      case "smo-polykernel":
+      case SMO_POLYKERNEL:
         return isClassification
             ? BuildClassifier.getSMOPolyKernel()
             : BuildClassifier.getSMORegPolyKernel();
-      case "smo-puk":
+      case SMO_PUK:
         return isClassification ? BuildClassifier.getSMOPuk() : BuildClassifier.getSMORegPuk();
-      case "linearegression":
+      case LINEAREGRESSION:
         return isClassification ? null : BuildClassifier.getRegression();
-      case "gaussian":
+      case GAUSSIAN:
         return isClassification ? null : BuildClassifier.getGaussianProcess();
-      case "bagging-smo":
+      case BAGGING_SMO:
         return isClassification
             ? BuildClassifier.getBaggingSMOPuk()
             : BuildClassifier.getBaggingSMOregPuk();
-      case "bagging-knn":
+      case BAGGING_KNN:
         return BuildClassifier.getBaggingKnn();
       default:
         return null;
     }
-  }
-
-  private static List<AbstractClassifier> getClassifierList() {
-    return Arrays.asList(
-        BuildClassifier.getKnnCV(),
-        BuildClassifier.getRandomForest(),
-        BuildClassifier.getAdaBoostM1(),
-        BuildClassifier.getBayesNet(),
-        BuildClassifier.getLogitBoost(),
-        BuildClassifier.getRandomCommittee(),
-        BuildClassifier.getSMOPolyKernel(),
-        BuildClassifier.getSMOPuk(),
-        BuildClassifier.getBaggingSMOPuk(),
-        BuildClassifier.getBaggingKnn());
-  }
-
-  private static List<AbstractClassifier> getRegressionList() {
-    return Arrays.asList(
-            BuildClassifier.getKnnCV(),
-        BuildClassifier.getRandomForest(),
-            BuildClassifier.getAdditiveRegression(),
-            BuildClassifier.getRandomCommittee(),
-            BuildClassifier.getSMORegPolyKernel(),
-            BuildClassifier.getSMORegPuk(),
-            BuildClassifier.getRegression(),
-        BuildClassifier.getGaussianProcess(),
-        BuildClassifier.getBaggingSMOregPuk(),
-        BuildClassifier.getBaggingKnn());
   }
 }

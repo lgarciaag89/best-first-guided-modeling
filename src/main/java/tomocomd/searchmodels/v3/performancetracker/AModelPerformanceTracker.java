@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import tomocomd.BuildClassifierList;
+import tomocomd.ClassifierNameEnum;
 import tomocomd.ModelingException;
 import tomocomd.searchmodels.v3.performancetracker.metricvalues.IMetricValue;
 import tomocomd.searchmodels.v3.utils.MetricType;
@@ -18,12 +20,13 @@ import weka.core.Instances;
 
 public abstract class AModelPerformanceTracker {
   protected String clasName;
-
   protected IMetricValue trainValues;
   protected IMetricValue testValues;
   protected List<IMetricValue> externalTestValues;
 
   protected AModelPerformanceTracker() {}
+
+  public abstract boolean isClassification();
 
   public abstract MetricType getMetricType();
 
@@ -46,21 +49,36 @@ public abstract class AModelPerformanceTracker {
       clasName =
           String.format("SMO(%s)", ((SMOreg) clasTmp).getKernel().getClass().getSimpleName());
     } else if (clasTmp instanceof Bagging) {
-      clasName = clasTmp instanceof RandomForest ? "RandomForest" :
-          String.format(
-              "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
+      clasName =
+          clasTmp instanceof RandomForest
+              ? "RandomForest"
+              : String.format(
+                  "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
     } else {
       clasName = clasTmp.getClass().getSimpleName();
     }
   }
 
   private Classifier[] buildAndGetClassifiers(
-      AbstractClassifier classifier, Instances train, int numCopies) {
+      ClassifierNameEnum classifierName, Instances train, int numCopies) {
     try {
-      AbstractClassifier clasTmp = (AbstractClassifier) AbstractClassifier.makeCopy(classifier);
-      clasTmp.buildClassifier(train);
-      getClassifierName(clasTmp);
-      return AbstractClassifier.makeCopies(clasTmp, numCopies);
+      AbstractClassifier classifier =
+          BuildClassifierList.getClassifier(classifierName, isClassification());
+
+      if (classifier instanceof IBk) {
+        ((IBk) classifier).setKNN((int) Math.sqrt(train.numInstances()));
+      }
+
+      if (classifier instanceof Bagging
+              && ((Bagging) classifier).getClassifier() instanceof IBk) {
+        ((IBk) ((Bagging) classifier).getClassifier())
+                .setKNN((int) Math.sqrt(train.numInstances()));
+      }
+
+
+      classifier.buildClassifier(train);
+      getClassifierName(classifier);
+      return AbstractClassifier.makeCopies(classifier, numCopies);
     } catch (Exception e) {
       throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
           "Problems building and copy " + clasName + " model", e);
@@ -68,13 +86,13 @@ public abstract class AModelPerformanceTracker {
   }
 
   private void buildModelPerformance(
-      AbstractClassifier classifier, Instances train, Instances tune, List<Instances> externalTest)
+      ClassifierNameEnum classifierName, Instances train, Instances tune, List<Instances> externalTest)
       throws ModelingException {
     int numCopies =
         1
             + (Objects.isNull(tune) ? 0 : 1)
             + (Objects.isNull(externalTest) ? 0 : externalTest.size());
-    Classifier[] copiedModels = buildAndGetClassifiers(classifier, train, numCopies);
+    Classifier[] copiedModels = buildAndGetClassifiers(classifierName, train, numCopies);
 
     evaluateTrainData(copiedModels[0], train);
     int startEvaluateModels = 1;
@@ -91,11 +109,11 @@ public abstract class AModelPerformanceTracker {
   }
 
   public double getModelPerformance(
-      AbstractClassifier classifier,
+      ClassifierNameEnum classifierName,
       Instances train,
       Instances test,
       List<Instances> externalTest) {
-    buildModelPerformance(classifier, train, test, externalTest);
+    buildModelPerformance(classifierName, train, test, externalTest);
     return computeValueToCompare();
   }
 }

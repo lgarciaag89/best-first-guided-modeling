@@ -185,7 +185,7 @@ public class BuildClassifier {
 
   public static AbstractClassifier getAdditiveRegression() {
     AdditiveRegression ab = new AdditiveRegression();
-    ab.setClassifier(BuildClassifier.getSMOPuk()); // set with SMoPUk
+    ab.setClassifier(BuildClassifier.getRandomForest());
     return ab;
   }
 

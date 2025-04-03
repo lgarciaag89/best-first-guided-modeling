@@ -6,7 +6,6 @@ Using a best-first search algorithm to guide the modeling process.
 ![Maven](https://img.shields.io/badge/Maven-3.8.8-blue.svg)
 [![Build And Release](https://github.com/cicese-biocom/best-first-guided-modeling/actions/workflows/maven_release.yml/badge.svg)](https://github.com/cicese-biocom/best-first-guided-modeling/actions/workflows/maven_release.yml)
 
-Meantime the repo is private we will get this message:
 
 ![Latest Release](https://img.shields.io/github/v/release/cicese-biocom/best-first-guided-modeling?label=latest&style=flat-square)
 
@@ -160,6 +159,23 @@ The application uses the following strategies to guide the modeling process:
     <td style="text-align: center;">X</td>
   </tr>
 </table>
+
+
+# Format, Build and install
+
+## Format
+Use the following command to format the code:
+
+```shell
+mvn fmt:format
+``` 
+
+## Build and install
+Use the following command to build and install the application:
+
+```shell
+mvn clean install
+```
 
 # Contributors
 

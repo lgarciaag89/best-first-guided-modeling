@@ -6,17 +6,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import tomocomd.ClassifierNameEnum;
 import tomocomd.ModelingException;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.SearchPath;
 import tomocomd.utils.ReadData;
 import weka.attributeSelection.ASSearch;
 import weka.attributeSelection.AttributeSelection;
-import weka.classifiers.AbstractClassifier;
-import weka.classifiers.functions.SMO;
-import weka.classifiers.functions.SMOreg;
-import weka.classifiers.meta.Bagging;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public class InitSearchModel {
@@ -33,14 +29,14 @@ public class InitSearchModel {
   private final SearchPath searchPath;
   private final List<MetricType> metricTypes;
   private final List<ASSearch> searchAlgorithms;
-  private final List<AbstractClassifier> classifiers;
+  private final List<ClassifierNameEnum> classifiersName;
 
   public InitSearchModel(
       File csvFile,
       File tuneCsv,
       File folderExtCsvs,
       String act,
-      List<AbstractClassifier> classifierList,
+      List<ClassifierNameEnum> classifierNameList,
       List<ASSearch> searchList,
       List<MetricType> metricTypes,
       SearchPath searchPath,
@@ -50,7 +46,7 @@ public class InitSearchModel {
     this.searchPath = searchPath;
     this.metricTypes = new LinkedList<>(metricTypes);
     this.searchAlgorithms = new LinkedList<>(searchList);
-    this.classifiers = new LinkedList<>(classifierList);
+    this.classifiersName = new LinkedList<>(classifierNameList);
     this.csvTrainFileName = csvFile;
 
     trainData = ReadData.readData(csvFile, act, isClassification);
@@ -68,21 +64,21 @@ public class InitSearchModel {
     ExecutorService executorService = Executors.newWorkStealingPool();
     List<Runnable> tasks = new ArrayList<>();
 
-    List<List<AbstractClassifier>> listClassifiers =
+    List<List<ClassifierNameEnum>> listClassifiersName =
         searchPath.equals(SearchPath.SHORT)
-            ? Collections.singletonList(classifiers)
-            : classifiers.stream().map(Collections::singletonList).collect(Collectors.toList());
+            ? Collections.singletonList(classifiersName)
+            : classifiersName.stream().map(Collections::singletonList).collect(Collectors.toList());
 
     // generating the list of tasks
     for (ASSearch search : searchAlgorithms) {
       for (MetricType metricType : metricTypes) {
-        for (List<AbstractClassifier> classifierSubList : listClassifiers) {
+        for (List<ClassifierNameEnum> classifierNameSubList : listClassifiersName) {
           String pathToSave =
               String.format(
                   "%s_models%s_%s_%s.csv",
                   csvTrainFileName.getAbsolutePath(),
-                  classifierSubList.size() == 1
-                      ? "_" + getClassifierName(classifierSubList.get(0))
+                  classifierNameSubList.size() == 1
+                      ? "_" + classifierNameSubList.get(0).toString()
                       : "",
                   metricType.toString(),
                   search.getClass().getSimpleName());
@@ -97,7 +93,7 @@ public class InitSearchModel {
                   pathToSave,
                   trainData.classIndex(),
                   metricType,
-                  classifierSubList);
+                  classifierNameSubList);
 
           tasks.add(() -> startSearch(searchModelEvaluator, search));
         }
@@ -120,20 +116,6 @@ public class InitSearchModel {
       }
     } finally {
       executorService.shutdown();
-    }
-  }
-
-  private String getClassifierName(AbstractClassifier clasTmp) {
-    if (clasTmp instanceof SMO) {
-      return String.format("SMO(%s)", ((SMO) clasTmp).getKernel().getClass().getSimpleName());
-    } else if (clasTmp instanceof SMOreg) {
-      return String.format("SMO(%s)", ((SMOreg) clasTmp).getKernel().getClass().getSimpleName());
-    } else if (clasTmp instanceof Bagging) {
-      return clasTmp instanceof RandomForest ? "RandomForest" :
-              String.format(
-                      "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
-    } else {
-      return clasTmp.getClass().getSimpleName();
     }
   }
 

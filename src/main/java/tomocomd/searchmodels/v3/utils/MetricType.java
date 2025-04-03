@@ -29,6 +29,7 @@ public enum MetricType {
 
   public enum ProblemType {
     REGRESSION,
-    CLASSIFICATION
+    CLASSIFICATION,
+    REGRESSION_CLASSIFICATION
   }
 }

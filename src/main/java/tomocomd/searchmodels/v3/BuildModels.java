@@ -8,10 +8,10 @@ import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import tomocomd.BuildClassifier;
 import tomocomd.BuildClassifierList;
+import tomocomd.ClassifierNameEnum;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.SearchPath;
 import weka.attributeSelection.ASSearch;
-import weka.classifiers.AbstractClassifier;
 
 public class BuildModels {
 
@@ -21,9 +21,9 @@ public class BuildModels {
     boolean isClassification = cmd.hasOption('c');
     boolean isShort = cmd.hasOption('s');
 
-    List<AbstractClassifier> classifierList =
+    List<ClassifierNameEnum> classifierNameList =
         cmd.hasOption("m")
-            ? BuildClassifierList.getclassifierList(cmd.getOptionValues("m"), isClassification)
+            ? BuildClassifierList.getClassifierNameList(cmd.getOptionValues("m"), isClassification)
             : Collections.emptyList();
 
     List<MetricType> metrics = getMetrics(isClassification, cmd.hasOption("t"));
@@ -37,7 +37,7 @@ public class BuildModels {
               tunePath,
               extFolderPath,
               act,
-              classifierList,
+              classifierNameList,
               asSearches,
               metrics,
               isShort ? SearchPath.SHORT : SearchPath.LONG,
