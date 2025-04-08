@@ -95,7 +95,22 @@ public class InitSearchModel {
                   metricType,
                   classifierNameSubList);
 
-          tasks.add(() -> startSearch(searchModelEvaluator, search));
+          tasks.add(
+              () -> {
+                String classifierName =
+                    classifierNameSubList.size() == 1
+                        ? classifierNameSubList.get(0).toString()
+                        : classifierNameSubList.stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(","));
+                System.out.printf(
+                    "Starting clasifiers:[%s] with search: %s and metric: %s%n",
+                    classifierName, search.getClass().getSimpleName(), metricType);
+                startSearch(searchModelEvaluator, search);
+                System.out.printf(
+                    "Completed clasifiers:[%s] with search: %s and metric: %s%n",
+                    classifierName, search.getClass().getSimpleName(), metricType);
+              });
         }
       }
     }

@@ -106,21 +106,17 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
             classifier -> {
               AModelPerformanceTracker tracker =
                   ModelPerformanceTrackerFactory.createModelPerformanceTracker(metricType);
-              System.out.println(
-                  "Running model: "
-                      + classifier
-                      + " for "
-                      + train.numAttributes()
-                      + " attributes and "
-                      + train.numInstances()
-                      + " instances");
-              double valueToCompare =
-                  tracker.getModelPerformance(classifier, train, internalTest, externalTests);
+              try {
+                double valueToCompare =
+                    tracker.getModelPerformance(classifier, train, internalTest, externalTests);
 
-              String line = tracker.getLineFromModelPerformance(modelId++, mdNames);
-              printResult.printLine(line, pathToSave);
+                String line = tracker.getLineFromModelPerformance(modelId++, mdNames);
+                printResult.printLine(line, pathToSave);
 
-              return valueToCompare;
+                return valueToCompare;
+              } catch (Exception e) {
+                return Double.MIN_VALUE;
+              }
             })
         .max(Double::compare)
         .orElse(Double.NEGATIVE_INFINITY);

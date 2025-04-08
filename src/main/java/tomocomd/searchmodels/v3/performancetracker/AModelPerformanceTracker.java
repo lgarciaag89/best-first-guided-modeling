@@ -59,7 +59,7 @@ public abstract class AModelPerformanceTracker {
     }
   }
 
-  private Classifier[] buildAndGetClassifiers(
+  public Classifier[] buildAndGetClassifiers(
       ClassifierNameEnum classifierName, Instances train, int numCopies) {
     try {
       AbstractClassifier classifier =
@@ -69,24 +69,35 @@ public abstract class AModelPerformanceTracker {
         ((IBk) classifier).setKNN((int) Math.sqrt(train.numInstances()));
       }
 
-      if (classifier instanceof Bagging
-              && ((Bagging) classifier).getClassifier() instanceof IBk) {
+      if (classifier instanceof Bagging && ((Bagging) classifier).getClassifier() instanceof IBk) {
         ((IBk) ((Bagging) classifier).getClassifier())
-                .setKNN((int) Math.sqrt(train.numInstances()));
+            .setKNN((int) Math.sqrt(train.numInstances()));
       }
-
 
       classifier.buildClassifier(train);
       getClassifierName(classifier);
+      if (classifierName == ClassifierNameEnum.GAUSSIAN) {
+        Classifier[] classifiers = new Classifier[numCopies];
+        classifiers[0] = classifier;
+        for (int i = 1; i < numCopies; i++) {
+          classifiers[i] = BuildClassifierList.getClassifier(classifierName, isClassification());
+          classifiers[i].buildClassifier(train);
+        }
+        return classifiers;
+      }
+
       return AbstractClassifier.makeCopies(classifier, numCopies);
     } catch (Exception e) {
       throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
-          "Problems building and copy " + clasName + " model", e);
+          "Problems building and copy " + classifierName + " model", e);
     }
   }
 
   private void buildModelPerformance(
-      ClassifierNameEnum classifierName, Instances train, Instances tune, List<Instances> externalTest)
+      ClassifierNameEnum classifierName,
+      Instances train,
+      Instances tune,
+      List<Instances> externalTest)
       throws ModelingException {
     int numCopies =
         1
