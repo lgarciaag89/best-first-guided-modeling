@@ -19,6 +19,17 @@ public class StartSearchModels {
 
     CommandLine cmd = DefiningCMDOptions.getCommandLine(args);
 
+    if (cmd.hasOption("re")) {
+      try {
+        File restarPointFile = new File(cmd.getOptionValue("re"));
+        BuildModels.restartModelling(restarPointFile);
+      } catch (Exception ex) {
+        ex.printStackTrace();
+        System.exit(-1);
+      }
+      System.exit(0);
+    }
+
     // train file
     File trainFile = null;
     try {
@@ -96,6 +107,9 @@ public class StartSearchModels {
 
     if (cmd.hasOption("m")) {
       BuildModels.buildModels(trainFile, tunePath, extFolderPath, act, cmd);
+    } else {
+      System.err.println("It is necessary to define a classifier");
+      System.exit(-1);
     }
   }
 }

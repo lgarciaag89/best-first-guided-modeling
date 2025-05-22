@@ -1,6 +1,7 @@
 package tomocomd.searchmodels.v3;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,6 +10,8 @@ import org.apache.commons.cli.CommandLine;
 import tomocomd.BuildClassifier;
 import tomocomd.BuildClassifierList;
 import tomocomd.ClassifierNameEnum;
+import tomocomd.restart.ModelAutoSaver;
+import tomocomd.restart.StatusManager;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.SearchPath;
 import weka.attributeSelection.ASSearch;
@@ -42,11 +45,27 @@ public class BuildModels {
               metrics,
               isShort ? SearchPath.SHORT : SearchPath.LONG,
               isClassification);
+
+      File saveFile = new File(trainFile.getAbsolutePath() + ".status");
+      ModelAutoSaver autoSaver = new ModelAutoSaver(initSearchModel, saveFile);
+      autoSaver.startAutoSave();
+
       initSearchModel.initSearchModel();
+      autoSaver.stopAutoSave();
     } catch (Exception ex) {
       ex.printStackTrace();
       System.exit(-1);
     }
+  }
+
+  public static void restartModelling(File statusFile) throws IOException, ClassNotFoundException {
+    InitSearchModel initSearchModel = StatusManager.loadStatus(statusFile);
+
+    ModelAutoSaver autoSaver = new ModelAutoSaver(initSearchModel, statusFile);
+    autoSaver.startAutoSave();
+
+    initSearchModel.submitStartSearch();
+    autoSaver.stopAutoSave();
   }
 
   private static List<MetricType> getMetrics(boolean isClassification, boolean hasTune) {

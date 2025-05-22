@@ -1,21 +1,21 @@
 package tomocomd.searchmodels.v3;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import tomocomd.ClassifierNameEnum;
 import tomocomd.ModelingException;
+import tomocomd.restart.SearchTask;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.SearchPath;
 import tomocomd.utils.ReadData;
 import weka.attributeSelection.ASSearch;
-import weka.attributeSelection.AttributeSelection;
 import weka.core.Instances;
 
-public class InitSearchModel {
+public class InitSearchModel implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private final File csvTrainFileName;
   private final Instances trainData;
@@ -30,6 +30,9 @@ public class InitSearchModel {
   private final List<MetricType> metricTypes;
   private final List<ASSearch> searchAlgorithms;
   private final List<ClassifierNameEnum> classifiersName;
+
+  // for save the status
+  private final List<SearchTask> tasks;
 
   public InitSearchModel(
       File csvFile,
@@ -57,12 +60,11 @@ public class InitSearchModel {
     externalTestData = ReadData.loadingExternalTestPath(folderExtCsvs, act, isClassification);
     externalTestNames =
         externalTestData.stream().map(Instances::relationName).collect(Collectors.toList());
+
+    tasks = new ArrayList<>();
   }
 
   public void initSearchModel() {
-
-    ExecutorService executorService = Executors.newWorkStealingPool();
-    List<Runnable> tasks = new ArrayList<>();
 
     List<List<ClassifierNameEnum>> listClassifiersName =
         searchPath.equals(SearchPath.SHORT)
@@ -88,38 +90,31 @@ public class InitSearchModel {
                   new Instances(trainData),
                   csvTuneFileName,
                   new Instances(testData),
-                  externalTestNames,
+                  new LinkedList<>(externalTestNames),
                   copyExternalData(externalTestData),
                   pathToSave,
                   trainData.classIndex(),
                   metricType,
-                  classifierNameSubList);
+                  new LinkedList<>(classifierNameSubList));
 
           tasks.add(
-              () -> {
-                String classifierName =
-                    classifierNameSubList.size() == 1
-                        ? classifierNameSubList.get(0).toString()
-                        : classifierNameSubList.stream()
-                            .map(Object::toString)
-                            .collect(Collectors.joining(","));
-                System.out.printf(
-                    "Starting clasifiers:[%s] with search: %s and metric: %s%n",
-                    classifierName, search.getClass().getSimpleName(), metricType);
-                startSearch(searchModelEvaluator, search);
-                System.out.printf(
-                    "Completed clasifiers:[%s] with search: %s and metric: %s%n",
-                    classifierName, search.getClass().getSimpleName(), metricType);
-              });
+              new SearchTask(searchModelEvaluator, makeCopy(search), new Instances(trainData)));
         }
       }
     }
 
+    submitStartSearch();
+  }
+
+  public void submitStartSearch() {
+    ExecutorService executorService = Executors.newWorkStealingPool();
     List<Future<?>> futures = new ArrayList<>();
     try {
-      for (Runnable task : tasks) {
-        Future<?> future = executorService.submit(task);
-        futures.add(future);
+      for (SearchTask task : tasks) {
+        if (!task.isCompleted()) {
+          Future<?> future = executorService.submit(task);
+          futures.add(future);
+        }
       }
 
       for (Future<?> future : futures) {
@@ -127,6 +122,7 @@ public class InitSearchModel {
           future.get();
         } catch (Exception e) {
           e.printStackTrace();
+          System.exit(-1);
         }
       }
     } finally {
@@ -146,19 +142,11 @@ public class InitSearchModel {
         .collect(Collectors.toList());
   }
 
-  private void startSearch(SearchModelEvaluator searchModelEvaluator, ASSearch search) {
-    AttributeSelection asSubset = new AttributeSelection();
-    asSubset.setEvaluator(searchModelEvaluator);
-    asSubset.setSearch(search);
-    asSubset.setXval(false);
-
+  private ASSearch makeCopy(ASSearch search) {
     try {
-      Instances startTrain = new Instances(trainData);
-      asSubset.SelectAttributes(startTrain);
-      asSubset.selectedAttributes();
-    } catch (Exception ex) {
-      throw ModelingException.ExceptionType.BUILDING_MODEL_EXCEPTION.get(
-          "Problems building classification models", ex);
+      return ASSearch.makeCopies(search, 1)[0];
+    } catch (Exception e) {
+      throw new RuntimeException("Error making copy of search algorithm", e);
     }
   }
 }

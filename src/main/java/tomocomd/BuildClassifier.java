@@ -5,8 +5,8 @@
  */
 package tomocomd;
 
+import tomocomd.restart.BFirst;
 import weka.attributeSelection.ASSearch;
-import weka.attributeSelection.BestFirst;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.net.estimate.BayesNetEstimator;
@@ -249,8 +249,8 @@ public class BuildClassifier {
   }
 
   public static ASSearch getBestFirst() throws Exception {
-    BestFirst bf = new BestFirst();
-    bf.setOptions(new String[] {"-D", "2"});
+    BFirst bf = new BFirst();
+    bf.setOptions(new String[] {"-D", "2", "-N", "10"});
     return bf;
   }
 }

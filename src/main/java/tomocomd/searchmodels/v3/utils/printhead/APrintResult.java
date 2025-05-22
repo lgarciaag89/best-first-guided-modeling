@@ -3,10 +3,11 @@ package tomocomd.searchmodels.v3.utils.printhead;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import tomocomd.ModelingException;
 
-public abstract class APrintResult {
+public abstract class APrintResult implements Serializable {
 
   protected abstract String generateHead(boolean hasTune, List<String> externalTestPath);
 

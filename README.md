@@ -12,7 +12,26 @@ Using a best-first search algorithm to guide the modeling process.
 ## Description
 
 <div style="text-align: justify;">
-A java application to guide the modeling process using a best-first search algorithm. The application uses a set of machine learning algorithms to generate models and evaluate them using a 10-cross-validation strategy with external validations. The application uses multiple evaluation metrics to assess the models. The application uses the Weka library to generate and evaluate the generated models.
+A java application to guide the modeling process using a best-first search algorithm.
+Characteristics of the application:
+
+1. Is based on Weka API
+2. Is designed to be used with datasets in CSV format as input data.
+3. Allows remove highly correlated attributes using Pearson correlation.
+4. Allows remove attributes with a low Shannon entropy.
+5. Allows to reduce the number of attributes usinng a consensus of:
+    - Pearson correlation
+    - Chi squared
+    - Information gain
+    - ReliefF
+    - Symmetrical uncertainty
+6. Performance on train dataset is obtained throw 10-CV.
+7. Uses multiple evaluation metrics to assess the models.
+8. The subsets for train the models are generates throw the best first search strategy.
+9. Allows restart the search process from a given point.
+10. The restore file(.status) is update automatically.
+
+
 </div>
 
 ### Execution
@@ -47,6 +66,9 @@ usage: cmd [-c] [-e <arg>] [-f] [-h] [-m <arg>] [-o] [-p <arg>] [-pt
  -pt,--pearson-threshold <arg>   Pearson correlation threshold for
                                  eliminating highly correlated attributes.
  -r,--reduce                     Reduces the number of attributes.
+  -re,--restart <arg>            Restart an incomplete execution, receive
+                                 a file with the status of the incomplete
+                                 execution.
  -s,--short                      If set, the search will be faster but may
                                  fall into local optima. Only one search
                                  will execute, and all classification
@@ -82,6 +104,12 @@ attributes:
 
 ```
 java -jar best-first-guided-modeling-{version}.jar -f -se 0.25 -pt 0.90 -r -e TARGET -c -m RandomForest SMO KNN -t TRAIN_PATH_FILE_CSV -p TEST_PATH_FILE_CSV -x EXTERNAL_PATH_FOLDER
+```
+
+For restarting a previous execution, use the `-re` option with the path to the status file
+
+```
+java -jar best-first-guided-modeling-{version}.jar -re PATH_TO_STATUS_FILE
 ```
 
 ### Modeling strategies

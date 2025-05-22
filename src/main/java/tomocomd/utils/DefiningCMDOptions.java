@@ -61,6 +61,12 @@ public class DefiningCMDOptions {
     options.addOption("r", "reduce", false, "Reduces the number of attributes.");
     options.addOption("o", "reorder", false, "Reverses the order of the attributes.");
 
+    options.addOption(
+        "re",
+        "restart",
+        true,
+        "Restart an incomplete execution, receive a file with the status of the incomplete execution.");
+
     return options;
   }
 

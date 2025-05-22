@@ -33,6 +33,14 @@ public class SearchModelEvaluator extends ASEvaluation implements SubsetEvaluato
   protected final List<ClassifierNameEnum> classifiersName;
   protected final APrintResult printResult;
 
+  public List<ClassifierNameEnum> getClassifiersName() {
+    return classifiersName;
+  }
+
+  public MetricType getMetricType() {
+    return metricType;
+  }
+
   public SearchModelEvaluator(
       String trainPath,
       Instances trainTotal,
