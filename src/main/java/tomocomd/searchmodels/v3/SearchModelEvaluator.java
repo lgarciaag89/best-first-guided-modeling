@@ -2,13 +2,13 @@ package tomocomd.searchmodels.v3;
 
 import java.util.*;
 import java.util.stream.IntStream;
-import tomocomd.ClassifierNameEnum;
-import tomocomd.ModelingException;
+import tomocomd.classifiers.ClassifierNameEnum;
 import tomocomd.searchmodels.v3.performancetracker.AModelPerformanceTracker;
 import tomocomd.searchmodels.v3.performancetracker.ModelPerformanceTrackerFactory;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import tomocomd.searchmodels.v3.utils.printhead.APrintResult;
 import tomocomd.searchmodels.v3.utils.printhead.PrintResultFactory;
+import tomocomd.utils.ModelingException;
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.SubsetEvaluator;
 import weka.core.Instances;

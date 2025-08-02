@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.stream.IntStream;
+import tomocomd.utils.ModelingException;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 

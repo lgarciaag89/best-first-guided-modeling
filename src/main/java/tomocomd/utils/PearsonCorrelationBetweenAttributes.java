@@ -1,7 +1,6 @@
 package tomocomd.utils;
 
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import tomocomd.ModelingException;
 import weka.core.Instances;
 
 public class PearsonCorrelationBetweenAttributes {

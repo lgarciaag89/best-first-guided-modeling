@@ -1,6 +1,5 @@
 package tomocomd.utils;
 
-import tomocomd.ModelingException;
 import weka.core.Instances;
 import weka.filters.unsupervised.attribute.Remove;
 

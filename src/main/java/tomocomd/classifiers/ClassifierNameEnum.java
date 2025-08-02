@@ -1,4 +1,4 @@
-package tomocomd;
+package tomocomd.classifiers;
 
 import tomocomd.searchmodels.v3.utils.MetricType;
 
@@ -13,7 +13,6 @@ public enum ClassifierNameEnum {
   SMO_POLYKERNEL("smo-polykernel", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   SMO_PUK("smo-puk", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   LINEAREGRESSION("linearegression", MetricType.ProblemType.REGRESSION),
-  GAUSSIAN("gaussian", MetricType.ProblemType.REGRESSION),
   BAGGING_SMO("bagging-smo", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   BAGGING_KNN("bagging-knn", MetricType.ProblemType.REGRESSION_CLASSIFICATION);
 

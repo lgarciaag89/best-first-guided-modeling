@@ -1,8 +1,8 @@
 package tomocomd.searchmodels.v3.performancetracker.classification;
 
-import tomocomd.ModelingException;
 import tomocomd.searchmodels.v3.performancetracker.metricvalues.ClassificationMetricValues;
 import tomocomd.searchmodels.v3.utils.MetricType;
+import tomocomd.utils.ModelingException;
 
 public class AccMeanModelPerformanceTracker extends AClassificationModelPerformanceTracker {
   @Override

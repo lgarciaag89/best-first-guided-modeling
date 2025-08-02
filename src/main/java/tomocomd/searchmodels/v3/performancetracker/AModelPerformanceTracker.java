@@ -4,18 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import tomocomd.BuildClassifierList;
-import tomocomd.ClassifierNameEnum;
-import tomocomd.ModelingException;
+import tomocomd.classifiers.Bagging;
+import tomocomd.classifiers.BuildClassifierList;
+import tomocomd.classifiers.ClassifierNameEnum;
 import tomocomd.searchmodels.v3.performancetracker.metricvalues.IMetricValue;
 import tomocomd.searchmodels.v3.utils.MetricType;
+import tomocomd.utils.ModelingException;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.functions.SMOreg;
 import weka.classifiers.lazy.IBk;
-import weka.classifiers.meta.Bagging;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public abstract class AModelPerformanceTracker {
@@ -49,11 +48,7 @@ public abstract class AModelPerformanceTracker {
       clasName =
           String.format("SMO(%s)", ((SMOreg) clasTmp).getKernel().getClass().getSimpleName());
     } else if (clasTmp instanceof Bagging) {
-      clasName =
-          clasTmp instanceof RandomForest
-              ? "RandomForest"
-              : String.format(
-                  "Bagging(%s)", ((Bagging) clasTmp).getClassifier().getClass().getSimpleName());
+      clasName = ((Bagging) clasTmp).getClassifierName();
     } else {
       clasName = clasTmp.getClass().getSimpleName();
     }
@@ -76,15 +71,6 @@ public abstract class AModelPerformanceTracker {
 
       classifier.buildClassifier(train);
       getClassifierName(classifier);
-      if (classifierName == ClassifierNameEnum.GAUSSIAN) {
-        Classifier[] classifiers = new Classifier[numCopies];
-        classifiers[0] = classifier;
-        for (int i = 1; i < numCopies; i++) {
-          classifiers[i] = BuildClassifierList.getClassifier(classifierName, isClassification());
-          classifiers[i].buildClassifier(train);
-        }
-        return classifiers;
-      }
 
       return AbstractClassifier.makeCopies(classifier, numCopies);
     } catch (Exception e) {

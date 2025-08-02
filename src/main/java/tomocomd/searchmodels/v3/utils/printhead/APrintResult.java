@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import tomocomd.ModelingException;
+import tomocomd.utils.ModelingException;
 
 public abstract class APrintResult implements Serializable {
 

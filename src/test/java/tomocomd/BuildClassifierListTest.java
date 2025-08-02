@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import tomocomd.classifiers.BuildClassifierList;
+import tomocomd.classifiers.ClassifierNameEnum;
 import tomocomd.searchmodels.v3.utils.MetricType;
 
 class BuildClassifierListTest {
@@ -54,7 +56,7 @@ class BuildClassifierListTest {
 
     List<ClassifierNameEnum> classifierNameList =
         BuildClassifierList.getClassifierNameList(models, false);
-    assertEquals(10, classifierNameList.size());
+    assertEquals(9, classifierNameList.size());
 
     classifierNameList.forEach(
         classifierNameEnum ->

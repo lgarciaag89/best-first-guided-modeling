@@ -3,7 +3,6 @@ package tomocomd.utils;
 import java.io.File;
 import java.util.*;
 import tomocomd.CSVManage;
-import tomocomd.ModelingException;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.NumericToNominal;

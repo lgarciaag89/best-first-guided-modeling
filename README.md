@@ -57,7 +57,7 @@ usage: cmd [-c] [-e <arg>] [-f] [-h] [-m <arg>] [-o] [-p <arg>] [-pt
                                  BayesNet(C), LogitBoost(C),
                                  RandomCommittee(C,R),
                                  SMO-PolyKernel(C,R), SMO-Puk(C,R),
-                                 LinerRegression(R), Gaussian(R),
+                                 LinerRegression(R), 
                                  Bagging-SMO(C,R),  Bagging-KNN(C,R)],
                                  where C=Classification, R=Regression.
                                  Use "all" to apply all possible models
@@ -168,11 +168,6 @@ The application uses the following strategies to guide the modeling process:
   </tr>
 <tr>
     <td>Linear Regression</td>
-    <td style="text-align: center;"></td>
-    <td style="text-align: center;">X</td>
-  </tr>
-<tr>
-    <td>Gaussian</td>
     <td style="text-align: center;"></td>
     <td style="text-align: center;">X</td>
   </tr>

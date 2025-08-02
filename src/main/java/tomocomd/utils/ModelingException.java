@@ -1,4 +1,4 @@
-package tomocomd;
+package tomocomd.utils;
 
 public class ModelingException extends RuntimeException {
   final ExceptionType type;
@@ -30,7 +30,11 @@ public class ModelingException extends RuntimeException {
     BUILDING_MODEL_EXCEPTION("Error building model"),
     CLASSIFIER_LOAD_EXCEPTION("Error loading the classifier"),
     FILTERING_EXCEPTION("Error applying filter operation"),
-    REDUCE_EXCEPTION("Error applying reduce operation");
+    REDUCE_EXCEPTION("Error applying reduce operation"),
+    BAGGING_PARALLEL_ERROR("Error in Bagging Parallel execution"),
+    MULTITHREADING_EXCEPTION("Error running multithreading task"),
+    RANDOMCOMMITEE_EXCEPTION("Error running Random committee task");
+    ;
 
     private final String message;
 

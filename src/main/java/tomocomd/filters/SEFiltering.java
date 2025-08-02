@@ -1,6 +1,6 @@
 package tomocomd.filters;
 
-import tomocomd.ModelingException;
+import tomocomd.utils.ModelingException;
 import tomocomd.utils.SEAttribute;
 import weka.core.Instances;
 

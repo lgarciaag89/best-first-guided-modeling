@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tomocomd;
+package tomocomd.classifiers;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import tomocomd.restart.BFirst;
 import weka.attributeSelection.ASSearch;
 import weka.classifiers.AbstractClassifier;
@@ -18,8 +21,9 @@ import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.Puk;
 import weka.classifiers.lazy.IBk;
-import weka.classifiers.meta.*;
-import weka.classifiers.trees.RandomForest;
+import weka.classifiers.meta.AdaBoostM1;
+import weka.classifiers.meta.AdditiveRegression;
+import weka.classifiers.meta.LogitBoost;
 import weka.core.EuclideanDistance;
 import weka.core.SelectedTag;
 import weka.core.neighboursearch.LinearNNSearch;
@@ -27,12 +31,16 @@ import weka.core.neighboursearch.NearestNeighbourSearch;
 
 /** @author potter */
 public class BuildClassifier {
+
+  private static final String PROPERTIES_PATH = "config.properties";
+  private static final String NUM_THREADS_OPTION = "numExecutionSlots";
+
   private BuildClassifier() {
     throw new IllegalStateException("BuildClassifier class");
   }
 
   public static AbstractClassifier getRandomForest() {
-    RandomForest rf = new RandomForest();
+    RandomForest rf = new RandomForest(2, getNumExecutionSlotsFromProperties(), "RandomForest");
     rf.setBagSizePercent(100);
     rf.setBatchSize("100");
     rf.setBreakTiesRandomly(false);
@@ -41,12 +49,9 @@ public class BuildClassifier {
     rf.setDoNotCheckCapabilities(false);
     rf.setMaxDepth(0);
     rf.setNumDecimalPlaces(2);
-    rf.setNumExecutionSlots(1);
     rf.setNumFeatures(0);
     rf.setNumIterations(100);
     rf.setOutputOutOfBagComplexityStatistics(false);
-    rf.setPrintClassifiers(false);
-    rf.setSeed(1);
     rf.setStoreOutOfBagPredictions(false);
     return rf;
   }
@@ -162,12 +167,6 @@ public class BuildClassifier {
     return by;
   }
 
-  public static AbstractClassifier getGaussianProcess() {
-    GaussianProcesses gp = new GaussianProcesses();
-    gp.setKernel(new Puk());
-    return gp;
-  }
-
   public static AbstractClassifier getAdaBoostM1() {
     AdaBoostM1 ab = new AdaBoostM1();
     ab.setBatchSize("100");
@@ -214,36 +213,28 @@ public class BuildClassifier {
 
   //  add bagging con smopuk reg
   public static AbstractClassifier getBaggingSMOregPuk() {
-    Bagging bagging = new Bagging();
+    Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(SMO-PUK)");
     bagging.setClassifier(getSMORegPuk());
     return bagging;
   }
 
   //  add bagging con smo
   public static AbstractClassifier getBaggingSMOPuk() {
-    Bagging bagging = new Bagging();
+    Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(SMO-PUK)");
     bagging.setClassifier(getSMOPuk());
     return bagging;
   }
 
   //  add bagging con knn
   public static AbstractClassifier getBaggingKnn() {
-    Bagging bagging = new Bagging();
+    Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(KNN)");
     bagging.setClassifier(getKnnCV());
     return bagging;
   }
 
   public static AbstractClassifier getRandomCommittee() {
-    RandomCommittee rc = new RandomCommittee();
-    rc.setBatchSize("100");
-    rc.setDebug(false);
-    rc.setDoNotCheckCapabilities(false);
-    rc.setNumDecimalPlaces(2);
-
-    rc.setNumIterations(10);
-    rc.setSeed(1);
-    rc.setNumExecutionSlots(1);
-
+    RandomCommittee rc =
+        new RandomCommittee(1, getNumExecutionSlotsFromProperties(), "RandomCommittee");
     rc.setClassifier(getRandomForest());
     return rc;
   }
@@ -252,5 +243,16 @@ public class BuildClassifier {
     BFirst bf = new BFirst();
     bf.setOptions(new String[] {"-D", "2", "-N", "10"});
     return bf;
+  }
+
+  public static int getNumExecutionSlotsFromProperties() {
+    Properties props = new Properties();
+    try (FileInputStream fis = new FileInputStream(PROPERTIES_PATH)) {
+      props.load(fis);
+    } catch (IOException e) {
+      throw new RuntimeException(
+          "No se pudo cargar el archivo de configuración: " + PROPERTIES_PATH, e);
+    }
+    return Integer.parseInt(props.getProperty(NUM_THREADS_OPTION, "1"));
   }
 }

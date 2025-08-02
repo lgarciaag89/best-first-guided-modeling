@@ -1,4 +1,4 @@
-package tomocomd;
+package tomocomd.classifiers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -70,8 +70,6 @@ public class BuildClassifierList {
         return isClassification ? BuildClassifier.getSMOPuk() : BuildClassifier.getSMORegPuk();
       case LINEAREGRESSION:
         return isClassification ? null : BuildClassifier.getRegression();
-      case GAUSSIAN:
-        return isClassification ? null : BuildClassifier.getGaussianProcess();
       case BAGGING_SMO:
         return isClassification
             ? BuildClassifier.getBaggingSMOPuk()
