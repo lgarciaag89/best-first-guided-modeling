@@ -12,8 +12,9 @@ Using a best-first search algorithm to guide the modeling process.
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=lgarciaag89_best-first-guided-modeling&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=lgarciaag89_best-first-guided-modeling)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=lgarciaag89_best-first-guided-modeling&metric=bugs)](https://sonarcloud.io/summary/new_code?id=lgarciaag89_best-first-guided-modeling)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=lgarciaag89_best-first-guided-modeling&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=lgarciaag89_best-first-guided-modeling)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=lgarciaag89_best-first-guided-modeling&metric=coverage)](https://sonarcloud.io/summary/new_code?id=lgarciaag89_best-first-guided-modeling)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=lgarciaag89_best-first-guided-modeling&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=lgarciaag89_best-first-guided-modeling)
+
+[![codecov](https://codecov.io/gh/lgarciaag89/best-first-guided-modeling/graph/badge.svg?token=14NNGVEN4C)](https://codecov.io/gh/lgarciaag89/best-first-guided-modeling)
 
 ## Description
 
