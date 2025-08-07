@@ -6,10 +6,13 @@ public enum ClassifierNameEnum {
   KNN("knn", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   RANDOMFOREST("randomforest", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   ADABOOST("adaboost", MetricType.ProblemType.CLASSIFICATION),
-  ADDITIVEREGRESSION("additiveregression", MetricType.ProblemType.REGRESSION),
+  ADDITIVEREGRESSION_RF("additiveregression-rf", MetricType.ProblemType.REGRESSION),
+  ADDITIVEREGRESSION_KNN("additiveregression-knn", MetricType.ProblemType.REGRESSION),
+  ADDITIVEREGRESSION_SMO("additiveregression-smo", MetricType.ProblemType.REGRESSION),
   BAYESNET("bayesnet", MetricType.ProblemType.CLASSIFICATION),
   LOGITBOOST("logitboost", MetricType.ProblemType.CLASSIFICATION),
-  RANDOMCOMMITTEE("randomcommittee", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
+  RANDOMCOMMITTEE_RF("randomcommittee-rf", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
+  RANDOMCOMMITTEE_RT("randomcommittee-rt", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   SMO_POLYKERNEL("smo-polykernel", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   SMO_PUK("smo-puk", MetricType.ProblemType.REGRESSION_CLASSIFICATION),
   LINEAREGRESSION("linearegression", MetricType.ProblemType.REGRESSION),
@@ -22,6 +25,10 @@ public enum ClassifierNameEnum {
   ClassifierNameEnum(String classifierName, MetricType.ProblemType regressionClassification) {
     this.classifierName = classifierName;
     this.problemType = regressionClassification;
+  }
+
+  public String getClassifierName() {
+    return classifierName;
   }
 
   public MetricType.ProblemType getProblemType() {

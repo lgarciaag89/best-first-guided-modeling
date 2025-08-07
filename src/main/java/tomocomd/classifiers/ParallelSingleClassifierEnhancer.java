@@ -75,6 +75,8 @@ public abstract class ParallelSingleClassifierEnhancer extends IteratedSingleCla
     final CountDownLatch doneSignal = new CountDownLatch(m_Classifiers.length);
     final AtomicInteger numFailed = new AtomicInteger();
 
+    logger.info("Execute {} meta classifier in {} cores... ", classifierName, numCores);
+
     for (int i = 0; i < m_Classifiers.length; i++) {
 
       final Classifier currentClassifier = m_Classifiers[i];

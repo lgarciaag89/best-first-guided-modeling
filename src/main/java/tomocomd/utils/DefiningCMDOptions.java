@@ -1,8 +1,20 @@
 package tomocomd.utils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tomocomd.classifiers.ClassifierNameEnum;
+import tomocomd.searchmodels.v3.utils.MetricType;
 
 public class DefiningCMDOptions {
+
+  private static final Logger logger = LogManager.getLogger(DefiningCMDOptions.class);
+
+  private DefiningCMDOptions() {
+    throw new IllegalStateException("Utility class");
+  }
 
   public static Options getOptions() {
     Options options = new Options();
@@ -22,15 +34,29 @@ public class DefiningCMDOptions {
         false,
         "Specifies that the problem is a classification problem. If it's a regression problem, do not set this option.");
 
+    String listClass =
+        Arrays.stream(ClassifierNameEnum.values())
+            .map(
+                classEnum -> {
+                  String classifierName = classEnum.getClassifierName().toUpperCase();
+                  if (classEnum.getProblemType() == MetricType.ProblemType.CLASSIFICATION) {
+                    return classifierName + "(C)";
+                  } else if (classEnum.getProblemType() == MetricType.ProblemType.REGRESSION) {
+                    return classifierName + "(R)";
+                  } else {
+                    return classifierName + "(C,R)";
+                  }
+                })
+            .collect(Collectors.joining(", "));
+
     Option opt =
         new Option(
             "m",
             "models",
             true,
-            "Space separate list of desired strategies. The strategies are: "
-                + "[KNN(C,R), RandomForest(C,R), Adaboost(C), AdditiveRegression(R), BayesNet(C), LogitBoost(C), "
-                + "RandomCommittee(C,R), SMO-PolyKernel(C,R), SMO-Puk(C,R), LinerRegression(R), "
-                + "Bagging-SMO(C,R),  Bagging-KNN(C,R)], where C=Classification, R=Regression.  Use \"all\" to apply all possible models");
+            "Space separate list of desired strategies. The strategies are: ["
+                + listClass
+                + "]  where C=Classification, R=Regression.  Use \"all\" to apply all possible models");
     opt.setOptionalArg(false);
     opt.setArgs(Option.UNLIMITED_VALUES);
     options.addOption(opt);
@@ -79,7 +105,7 @@ public class DefiningCMDOptions {
       cmd = parser.parse(options, args);
     } catch (ParseException ex) {
       help.printHelp("cmd", options, true);
-      System.err.println("Problems parsing command line:" + ex.getMessage());
+      logger.error("Problems parsing command line:{}", ex.getMessage(), ex);
       System.exit(-1);
     }
 
@@ -90,7 +116,10 @@ public class DefiningCMDOptions {
       System.out.println(VersionUtil.getVersionInfo());
       System.exit(0);
     }
-    System.out.println("Command line: " + String.join(" ", args));
+
+    String argsString = String.join(" ", args);
+
+    logger.info("Command line:{} ", argsString);
     return cmd;
   }
 }

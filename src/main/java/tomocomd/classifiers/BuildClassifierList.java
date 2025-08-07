@@ -4,10 +4,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tomocomd.searchmodels.v3.utils.MetricType;
 import weka.classifiers.AbstractClassifier;
 
 public class BuildClassifierList {
+
+  private static final Logger logger = LogManager.getLogger(BuildClassifierList.class);
 
   protected BuildClassifierList() {}
 
@@ -37,7 +41,8 @@ public class BuildClassifierList {
                 ClassifierNameEnum classifier = ClassifierNameEnum.fromString(name);
                 return validClassifiers.contains(classifier) ? classifier : null;
               } catch (IllegalArgumentException e) {
-                System.out.println("Model not valid: " + name);
+                logger.warn("Model not valid: {}", name);
+
                 return null;
               }
             })
@@ -54,14 +59,20 @@ public class BuildClassifierList {
         return BuildClassifier.getRandomForest();
       case ADABOOST:
         return isClassification ? BuildClassifier.getAdaBoostM1() : null;
-      case ADDITIVEREGRESSION:
-        return isClassification ? null : BuildClassifier.getAdditiveRegression();
+      case ADDITIVEREGRESSION_RF:
+        return isClassification ? null : BuildClassifier.getAdditiveRegressionRF();
+      case ADDITIVEREGRESSION_KNN:
+        return isClassification ? null : BuildClassifier.getAdditiveRegressionKnn();
+      case ADDITIVEREGRESSION_SMO:
+        return isClassification ? null : BuildClassifier.getAdditiveRegressionSMOReg();
       case BAYESNET:
         return isClassification ? BuildClassifier.getBayesNet() : null;
       case LOGITBOOST:
         return isClassification ? BuildClassifier.getLogitBoost() : null;
-      case RANDOMCOMMITTEE:
-        return BuildClassifier.getRandomCommittee();
+      case RANDOMCOMMITTEE_RF:
+        return BuildClassifier.getRandomCommitteeRandomForest();
+      case RANDOMCOMMITTEE_RT:
+        return BuildClassifier.getRandomCommitteeRandomTree();
       case SMO_POLYKERNEL:
         return isClassification
             ? BuildClassifier.getSMOPolyKernel()

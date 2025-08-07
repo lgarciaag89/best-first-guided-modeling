@@ -1,0 +1,29 @@
+<Configuration status="WARN">
+    <Appenders>
+        <!-- INFO log: Capture info, warn, error, fatal -->
+        <File name="file-info" fileName="logs/info.log">
+            <PatternLayout pattern="%d{HH:mm:ss dd.MM} [%M] %logger{2}[%L] - %msg %n"/>
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+
+        <!-- DEBUG log: Capture debug and above (info, warn, error, fatal) -->
+        <File name="file-debug" fileName="logs/debug.log">
+            <PatternLayout pattern="%d{HH:mm:ss dd.MM} [%M] %logger{2}[%L] - %msg %n"/>
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+
+        <!-- ERROR log: Capture only error and fatal -->
+        <File name="file-error" fileName="logs/error.log">
+            <PatternLayout pattern="%d{HH:mm:ss dd.MM} [%M] %logger{2}[%L]  - %msg %n"/>
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="file-info"/>
+            <AppenderRef ref="file-debug"/>
+            <AppenderRef ref="file-error"/>
+        </Root>
+    </Loggers>
+</Configuration>

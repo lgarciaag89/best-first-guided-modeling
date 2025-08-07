@@ -8,7 +8,10 @@ package tomocomd.classifiers;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tomocomd.restart.BFirst;
+import tomocomd.utils.ModelingException;
 import weka.attributeSelection.ASSearch;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.bayes.BayesNet;
@@ -34,6 +37,8 @@ public class BuildClassifier {
 
   private static final String PROPERTIES_PATH = "config.properties";
   private static final String NUM_THREADS_OPTION = "numExecutionSlots";
+
+  private static final Logger logger = LogManager.getLogger(BuildClassifier.class);
 
   private BuildClassifier() {
     throw new IllegalStateException("BuildClassifier class");
@@ -138,7 +143,7 @@ public class BuildClassifier {
     try {
       nns.setDistanceFunction(ed);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.warn(e);
     }
     ibk.setNearestNeighbourSearchAlgorithm(nns);
     return ibk;
@@ -182,9 +187,24 @@ public class BuildClassifier {
     return ab;
   }
 
-  public static AbstractClassifier getAdditiveRegression() {
+  public static AbstractClassifier getAdditiveRegressionRF() {
     AdditiveRegression ab = new AdditiveRegression();
-    ab.setClassifier(BuildClassifier.getRandomForest());
+    ab.setClassifier(getRandomForest());
+    ab.setNumIterations(10);
+    return ab;
+  }
+
+  public static AbstractClassifier getAdditiveRegressionKnn() {
+    AdditiveRegression ab = new AdditiveRegression();
+    ab.setClassifier(getKnnCV());
+    ab.setNumIterations(100);
+    return ab;
+  }
+
+  public static AbstractClassifier getAdditiveRegressionSMOReg() {
+    AdditiveRegression ab = new AdditiveRegression();
+    ab.setClassifier(getSMORegPuk());
+    ab.setNumIterations(100);
     return ab;
   }
 
@@ -215,6 +235,7 @@ public class BuildClassifier {
   public static AbstractClassifier getBaggingSMOregPuk() {
     Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(SMO-PUK)");
     bagging.setClassifier(getSMORegPuk());
+    bagging.setNumIterations(100);
     return bagging;
   }
 
@@ -222,6 +243,7 @@ public class BuildClassifier {
   public static AbstractClassifier getBaggingSMOPuk() {
     Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(SMO-PUK)");
     bagging.setClassifier(getSMOPuk());
+    bagging.setNumIterations(100);
     return bagging;
   }
 
@@ -229,13 +251,22 @@ public class BuildClassifier {
   public static AbstractClassifier getBaggingKnn() {
     Bagging bagging = new Bagging(1, getNumExecutionSlotsFromProperties(), "BAGGING(KNN)");
     bagging.setClassifier(getKnnCV());
+    bagging.setNumIterations(100);
     return bagging;
   }
 
-  public static AbstractClassifier getRandomCommittee() {
+  public static AbstractClassifier getRandomCommitteeRandomForest() {
     RandomCommittee rc =
-        new RandomCommittee(1, getNumExecutionSlotsFromProperties(), "RandomCommittee");
+        new RandomCommittee(1, getNumExecutionSlotsFromProperties(), "RandomCommittee(RF)");
     rc.setClassifier(getRandomForest());
+    rc.setNumIterations(10);
+    return rc;
+  }
+
+  public static AbstractClassifier getRandomCommitteeRandomTree() {
+    RandomCommittee rc =
+        new RandomCommittee(1, getNumExecutionSlotsFromProperties(), "RandomCommittee(RT)");
+    rc.setNumIterations(100);
     return rc;
   }
 
@@ -250,8 +281,8 @@ public class BuildClassifier {
     try (FileInputStream fis = new FileInputStream(PROPERTIES_PATH)) {
       props.load(fis);
     } catch (IOException e) {
-      throw new RuntimeException(
-          "No se pudo cargar el archivo de configuración: " + PROPERTIES_PATH, e);
+      throw ModelingException.ExceptionType.ERR_REAADING_CONFIG_FILE.get(
+          "Is not possible read config file: " + PROPERTIES_PATH, e);
     }
     return Integer.parseInt(props.getProperty(NUM_THREADS_OPTION, "1"));
   }
