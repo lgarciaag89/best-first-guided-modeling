@@ -12,7 +12,7 @@ class BuildClassifierListTest {
 
   @Test
   void getClassifierNameListClass() {
-    String[] models = {"KNN", "RANDOMFOREST", "ADABOOST", "ADDITIVEREGRESSION"};
+    String[] models = {"KNN", "RANDOMFOREST", "ADABOOST", "ADDITIVEREGRESSION-RF"};
 
     List<ClassifierNameEnum> classifierNameList =
         BuildClassifierList.getClassifierNameList(models, true);
@@ -24,14 +24,14 @@ class BuildClassifierListTest {
 
   @Test
   void getClassifierNameListReg() {
-    String[] models = {"KNN", "RANDOMFOREST", "ADABOOST", "ADDITIVEREGRESSION"};
+    String[] models = {"KNN", "RANDOMFOREST", "ADABOOST", "ADDITIVEREGRESSION-rf"};
 
     List<ClassifierNameEnum> classifierNameList =
         BuildClassifierList.getClassifierNameList(models, false);
     assertEquals(3, classifierNameList.size());
     assertTrue(classifierNameList.contains(ClassifierNameEnum.KNN));
     assertTrue(classifierNameList.contains(ClassifierNameEnum.RANDOMFOREST));
-    assertTrue(classifierNameList.contains(ClassifierNameEnum.ADDITIVEREGRESSION));
+    assertTrue(classifierNameList.contains(ClassifierNameEnum.ADDITIVEREGRESSION_RF));
   }
 
   @Test
@@ -40,7 +40,7 @@ class BuildClassifierListTest {
 
     List<ClassifierNameEnum> classifierNameList =
         BuildClassifierList.getClassifierNameList(models, true);
-    assertEquals(10, classifierNameList.size());
+    assertEquals(11, classifierNameList.size());
 
     classifierNameList.forEach(
         classifierNameEnum ->
@@ -56,7 +56,7 @@ class BuildClassifierListTest {
 
     List<ClassifierNameEnum> classifierNameList =
         BuildClassifierList.getClassifierNameList(models, false);
-    assertEquals(9, classifierNameList.size());
+    assertEquals(12, classifierNameList.size());
 
     classifierNameList.forEach(
         classifierNameEnum ->
