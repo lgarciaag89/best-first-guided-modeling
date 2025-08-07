@@ -8,7 +8,6 @@ package tomocomd.classifiers;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tomocomd.restart.BFirst;
@@ -144,7 +143,7 @@ public class BuildClassifier {
     try {
       nns.setDistanceFunction(ed);
     } catch (Exception e) {
-     logger.warn(e);
+      logger.warn(e);
     }
     ibk.setNearestNeighbourSearchAlgorithm(nns);
     return ibk;
@@ -282,7 +281,8 @@ public class BuildClassifier {
     try (FileInputStream fis = new FileInputStream(PROPERTIES_PATH)) {
       props.load(fis);
     } catch (IOException e) {
-      throw ModelingException.ExceptionType.ERR_REAADING_CONFIG_FILE.get("Is not possible read config file: " + PROPERTIES_PATH, e);
+      throw ModelingException.ExceptionType.ERR_REAADING_CONFIG_FILE.get(
+          "Is not possible read config file: " + PROPERTIES_PATH, e);
     }
     return Integer.parseInt(props.getProperty(NUM_THREADS_OPTION, "1"));
   }

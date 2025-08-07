@@ -33,8 +33,8 @@ public class ModelingException extends RuntimeException {
     REDUCE_EXCEPTION("Error applying reduce operation"),
     BAGGING_PARALLEL_ERROR("Error in Bagging Parallel execution"),
     MULTITHREADING_EXCEPTION("Error running multithreading task"),
-    RANDOMCOMMITEE_EXCEPTION("Error running Random committee task");
-    ;
+    RANDOMCOMMITEE_EXCEPTION("Error running Random committee task"),
+    ERR_REAADING_CONFIG_FILE("Error reading configuration file");
 
     private final String message;
 

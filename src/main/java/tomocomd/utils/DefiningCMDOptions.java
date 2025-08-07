@@ -10,7 +10,6 @@ import tomocomd.searchmodels.v3.utils.MetricType;
 
 public class DefiningCMDOptions {
 
-
   private static final Logger logger = LogManager.getLogger(DefiningCMDOptions.class);
 
   private DefiningCMDOptions() {
