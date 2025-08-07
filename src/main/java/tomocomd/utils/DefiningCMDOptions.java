@@ -116,7 +116,10 @@ public class DefiningCMDOptions {
       System.out.println(VersionUtil.getVersionInfo());
       System.exit(0);
     }
-    logger.info("Command line:{} ", String.join(" ", args));
+
+    String argsString = String.join(" ", args);
+
+    logger.info("Command line:{} ", argsString);
     return cmd;
   }
 }
